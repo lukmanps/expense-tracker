@@ -37,62 +37,79 @@ export default function BottomNav() {
 
       {/* FAB Menu */}
       {showMenu && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3 animate-fade-in">
+        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3 animate-fade-in w-full max-w-[200px] px-4">
           {fabActions.map((action) => (
             <button
               key={action.label}
               onClick={() => handleFabAction(action.path)}
-              className="flex items-center gap-3 px-5 py-3 bg-surface rounded-2xl shadow-lg min-w-[160px] active:scale-95 transition-transform"
+              className="group flex items-center justify-between w-full px-4 py-3 bg-surface/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl active:scale-95 transition-all"
             >
+              <span className="text-sm font-bold text-text/90 tracking-wide">{action.label}</span>
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: `${action.color}20` }}
+                className="w-10 h-10 rounded-xl flex items-center justify-center shadow-inner"
+                style={{ backgroundColor: `${action.color}15` }}
               >
-                <action.icon className="w-5 h-5" style={{ color: action.color }} />
+                <action.icon className="w-5 h-5 shadow-sm" style={{ color: action.color }} />
               </div>
-              <span className="text-sm font-semibold text-text">{action.label}</span>
             </button>
           ))}
         </div>
       )}
 
-      {/* Nav Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-border" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="flex items-center justify-around max-w-lg mx-auto h-16">
-          {navItems.map((item) => {
-            if (item.isFab) {
-              return (
-                <button
-                  key="fab"
-                  onClick={() => setShowMenu((prev) => !prev)}
-                  className={`flex items-center justify-center w-14 h-14 -mt-7 rounded-full shadow-lg active:scale-95 transition-all ${
-                    showMenu ? 'bg-danger rotate-45' : 'bg-primary'
-                  }`}
-                  id="fab-add"
-                >
-                  <Plus className="w-7 h-7 text-bg-dark" strokeWidth={2.5} />
-                </button>
-              );
-            }
+      {/* Nav Bar Container */}
+      <div className="fixed bottom-6 left-0 right-0 z-50 px-6 pointer-events-none" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <nav className="max-w-xl mx-auto h-20 bg-surface/70 backdrop-blur-2xl border border-white/5 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] pointer-events-auto overflow-visible relative">
+          <div className="flex items-center justify-around h-full px-4 relative">
+            {navItems.map((item, index) => {
+              if (item.isFab) {
+                return (
+                  <div key="fab-container" className="relative -top-8">
+                    <button
+                      onClick={() => setShowMenu((prev) => !prev)}
+                      className={`group relative flex items-center justify-center w-16 h-16 rounded-[22px] shadow-[0_12px_24px_rgba(200,233,114,0.3)] active:scale-90 transition-all duration-300 ${
+                        showMenu ? 'bg-danger' : 'bg-[#C8E972]'
+                      }`}
+                      id="fab-add"
+                    >
+                      <Plus 
+                        className={`w-8 h-8 text-black transition-transform duration-500 ${showMenu ? 'rotate-[135deg]' : 'rotate-0'}`} 
+                        strokeWidth={2.5} 
+                      />
+                      {/* Sub-glow/Reflected light */}
+                      {!showMenu && <div className="absolute inset-0 rounded-[22px] bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />}
+                    </button>
+                  </div>
+                );
+              }
 
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center gap-0.5 py-1 px-3 min-w-[56px] transition-colors ${
-                    isActive ? 'text-primary-dark' : 'text-text-muted'
-                  }`
-                }
-                id={`nav-${item.label.toLowerCase()}`}
-              >
-                <item.icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">{item.label}</span>
-              </NavLink>
-            );
-          })}
-        </div>
-      </nav>
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    `relative flex flex-col items-center justify-center h-full px-4 transition-all duration-300 ${
+                      isActive ? 'text-[#C8E972]' : 'text-text/40 hover:text-text/70'
+                    }`
+                  }
+                  id={`nav-${item.label.toLowerCase()}`}
+                >
+                  {({ isActive }) => (
+                    <>
+                      <item.icon className={`w-6 h-6 transition-transform duration-300 ${isActive ? 'scale-110' : 'scale-100'}`} strokeWidth={isActive ? 2.5 : 2} />
+                      <span className={`text-[10px] font-bold mt-1 transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-0 h-0'}`}>
+                        {item.label}
+                      </span>
+                      {isActive && (
+                        <div className="absolute -bottom-1 w-1 h-1 bg-[#C8E972] rounded-full shadow-[0_0_10px_#C8E972]" />
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              );
+            })}
+          </div>
+        </nav>
+      </div>
     </>
   );
 }

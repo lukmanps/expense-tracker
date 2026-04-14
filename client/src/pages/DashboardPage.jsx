@@ -51,107 +51,125 @@ export default function DashboardPage() {
     : recentActivity.filter((a) => a.type === filter);
 
   return (
-    <div className="animate-fade-in">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-bg/80 backdrop-blur-lg px-5 py-4">
-        <div className="flex items-center justify-between">
-          <div className="w-10 h-10 rounded-full bg-surface-alt flex items-center justify-center">
-            <span className="text-sm font-bold text-text">
-              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-            </span>
+    <div className="h-full flex flex-col overflow-hidden animate-fade-in bg-bg">
+      {/* Top Fixed Section: Header, Balance, Summary */}
+      <div className="flex-shrink-0">
+        <div 
+          className="relative overflow-hidden"
+          style={{ 
+            background: 'linear-gradient(180deg, rgba(204, 237, 133, 0.35) 0%, rgba(204, 237, 133, 0.1) 50%, transparent 100%)',
+          }}
+        >
+          {/* Subtle texture/overlay */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
+          
+          {/* Header */}
+          <div className="px-5 py-5 flex items-center justify-between relative z-10">
+            <div className="w-10 h-10 rounded-full bg-surface-alt flex items-center justify-center border border-border/20">
+              <span className="text-sm font-bold text-text">
+                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+              </span>
+            </div>
+            <h1 className="text-base font-bold text-text tracking-tight">Main Account</h1>
+            <button className="relative w-10 h-10 rounded-full bg-surface-alt flex items-center justify-center border border-border/20">
+              <Bell className="w-5 h-5 text-text-secondary" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full border border-bg" />
+            </button>
           </div>
-          <h1 className="text-base font-semibold text-text">Main Account</h1>
-          <button className="relative w-10 h-10 rounded-full bg-surface-alt flex items-center justify-center">
-            <Bell className="w-5 h-5 text-text-secondary" />
-            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-primary rounded-full border-2 border-bg" />
-          </button>
+
+          {/* Balance */}
+          <div className="text-center pt-2 pb-5 px-5 relative z-10">
+            <p className="text-[11px] font-bold text-text-muted mb-0.5 uppercase tracking-widest opacity-60">Your Balance</p>
+            <div className="text-text">
+              <AmountDisplay amount={summary?.balance || 0} size="xl" />
+            </div>
+            {summary?.balance > 0 && (
+              <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 bg-primary/10 backdrop-blur-md rounded-full border border-white/5">
+                <TrendingUp className="w-3 h-3 text-primary" />
+                <span className="text-[10px] font-bold text-text">
+                  You saved ${Math.abs(summary?.balance || 0).toLocaleString()} this month
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Integrated Summary Section */}
+          <div className="px-8 pb-8 relative z-10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <ArrowUpRight className="w-8 h-8 text-danger/80" />
+                <div>
+                  <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider opacity-60">Expenses</p>
+                  <p className="text-base font-black text-text">
+                    -${(summary?.totalExpense || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 text-right">
+                <div>
+                  <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider opacity-60">Income</p>
+                  <p className="text-base font-black text-text">
+                    +${(summary?.totalIncome || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+                <ArrowDownLeft className="w-8 h-8 text-success/80" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Balance Card */}
-      <div className="px-5 pb-2">
-        <div className="text-center py-6">
-          <p className="text-sm text-text-secondary mb-1">Your Balance</p>
-          <AmountDisplay amount={summary?.balance || 0} size="xl" className="text-text" />
-          {summary?.balance > 0 && (
-            <div className="inline-flex items-center gap-1 mt-3 px-3 py-1 bg-primary/20 rounded-full">
-              <TrendingUp className="w-3.5 h-3.5 text-primary-dark" />
-              <span className="text-xs font-medium text-primary-dark">
-                You saved ${Math.abs(summary?.balance || 0).toLocaleString()} this month
-              </span>
+      {/* Visual Separator */}
+      <div className="h-2 bg-surface-alt/30 border-y border-border/10 flex-shrink-0" />
+
+      {/* Scrollable Transaction History Section */}
+      <div className="flex-1 overflow-hidden flex flex-col bg-bg rounded-t-[40px] border-t border-x border-border/10 shadow-[0_-12px_40px_rgba(0,0,0,0.1)] -mt-6 relative z-20 pt-8">
+        <div className="px-5 flex-shrink-0">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-text opacity-90">Transaction History</h2>
+            <button
+              onClick={() => navigate('/expenses')}
+              className="text-xs font-bold text-text-muted hover:text-text flex items-center gap-0.5 transition-colors active:scale-95"
+            >
+              View all <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <FilterChips options={activityFilters} selected={filter} onSelect={setFilter} className="mb-4" />
+        </div>
+
+        {/* The Actual Scrollable List */}
+        <div className="flex-1 overflow-y-auto px-5 pb-36">
+          {filteredActivity.length === 0 ? (
+            <div className="text-center py-12 text-text-muted text-sm italic font-medium opacity-50">No transactions recorded yet</div>
+          ) : (
+            <div className="divide-y divide-border/20">
+              {filteredActivity.map((item) => {
+                const IconComp = getIcon(item.icon);
+                return (
+                  <div key={item.id} className="flex items-center gap-3 py-2.5 group active:bg-surface-alt/15 transition-colors rounded-xl px-1 -mx-1">
+                    <div
+                      className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm"
+                      style={{ backgroundColor: `${item.color}15` }}
+                    >
+                      <IconComp className="w-4.5 h-4.5 transition-transform group-hover:scale-110" style={{ color: item.color }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-text truncate tracking-tight opacity-90">{item.title}</p>
+                      <p className="text-[10px] font-medium text-text-muted opacity-50 mt-0.5">
+                        {format(new Date(item.date), 'MMM d')} · {format(new Date(item.date), 'h:mm a')}
+                      </p>
+                    </div>
+                    <p className={`text-[14px] font-medium flex-shrink-0 tabular-nums ${
+                      item.amount >= 0 ? 'text-success' : 'text-text'
+                    }`}>
+                      {item.amount >= 0 ? '+' : '-'}${Math.abs(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="px-5 pb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <ArrowUpRight className="w-8 h-8 text-danger" />
-            <div>
-              <p className="text-xs text-text-muted font-medium mb-0.5">Expenses</p>
-              <p className="text-lg font-bold text-white">
-                -${(summary?.totalExpense || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <ArrowDownLeft className="w-8 h-8 text-success" />
-            <div>
-              <p className="text-xs text-text-muted font-medium mb-0.5">Income</p>
-              <p className="text-lg font-bold text-white">
-                +${(summary?.totalIncome || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Transaction History */}
-      <div className="px-5 pb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-semibold text-text">Transaction History</h2>
-          <button
-            onClick={() => navigate('/expenses')}
-            className="text-sm text-text-secondary flex items-center gap-0.5"
-          >
-            View all <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-
-        <FilterChips options={activityFilters} selected={filter} onSelect={setFilter} className="mb-3" />
-
-        {filteredActivity.length === 0 ? (
-          <div className="text-center py-8 text-text-muted text-sm">No transactions yet</div>
-        ) : (
-          <div className="divide-y divide-border/40">
-            {filteredActivity.map((item) => {
-              const IconComp = getIcon(item.icon);
-              return (
-                <div key={item.id} className="flex items-center gap-3 py-2.5">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: `${item.color}20` }}
-                  >
-                    <IconComp className="w-5 h-5" style={{ color: item.color }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-text truncate">{item.title}</p>
-                    <p className="text-[11px] text-text-muted">
-                      {format(new Date(item.date), 'MMM d')} · {format(new Date(item.date), 'h:mm a')}
-                    </p>
-                  </div>
-                  <p className={`text-sm font-semibold flex-shrink-0 ${
-                    item.amount >= 0 ? 'text-success' : 'text-text'
-                  }`}>
-                    {item.amount >= 0 ? '+' : '-'}${Math.abs(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        )}
       </div>
     </div>
   );

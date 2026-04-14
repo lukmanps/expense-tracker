@@ -61,28 +61,28 @@ export default function StatsPage() {
   const totalCategoryAmount = categories.reduce((s, c) => s + c.amount, 0);
 
   return (
-    <div className="animate-fade-in">
+    <div className="h-full flex flex-col overflow-hidden animate-fade-in bg-bg">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-bg/80 backdrop-blur-lg px-5 pt-4 pb-3">
-        <h1 className="text-xl font-bold text-text mb-3">Statistics</h1>
+      <div className="flex-shrink-0 bg-bg px-5 pt-4 pb-3 border-b border-border/10 shadow-sm">
+        <h1 className="text-xl font-bold text-text mb-4">Statistics</h1>
 
         {/* Summary */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <Card className="p-3 text-center">
-            <p className="text-[10px] text-text-muted uppercase font-medium">Income</p>
-            <p className="text-sm font-bold text-success mt-0.5">
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <Card className="p-3 text-center bg-surface-alt/50 border-none shadow-sm">
+            <p className="text-[10px] text-text-muted uppercase font-bold tracking-wider opacity-60">Income</p>
+            <p className="text-sm font-black text-success mt-1">
               ${(summary?.totalIncome || 0).toLocaleString()}
             </p>
           </Card>
-          <Card className="p-3 text-center">
-            <p className="text-[10px] text-text-muted uppercase font-medium">Expenses</p>
-            <p className="text-sm font-bold text-danger mt-0.5">
+          <Card className="p-3 text-center bg-surface-alt/50 border-none shadow-sm">
+            <p className="text-[10px] text-text-muted uppercase font-bold tracking-wider opacity-60">Expenses</p>
+            <p className="text-sm font-black text-danger mt-1">
               ${(summary?.totalExpense || 0).toLocaleString()}
             </p>
           </Card>
-          <Card className="p-3 text-center">
-            <p className="text-[10px] text-text-muted uppercase font-medium">Balance</p>
-            <p className="text-sm font-bold text-text mt-0.5">
+          <Card className="p-3 text-center bg-surface-alt/50 border-none shadow-sm">
+            <p className="text-[10px] text-text-muted uppercase font-bold tracking-wider opacity-60">Balance</p>
+            <p className="text-sm font-black text-text mt-1">
               ${(summary?.balance || 0).toLocaleString()}
             </p>
           </Card>
@@ -91,18 +91,18 @@ export default function StatsPage() {
         <FilterChips options={tabs} selected={tab} onSelect={setTab} />
       </div>
 
-      <div className="px-5 pt-4">
+      <div className="flex-1 overflow-y-auto px-5 pt-6 pb-32">
         {/* Weekly Chart */}
         {tab === 'weekly' && (
-          <Card className="p-4">
-            <h3 className="text-sm font-semibold text-text mb-4">Weekly Spending</h3>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={weekly} barSize={24}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} width={40} />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="amount" fill="#C8E972" radius={[6, 6, 0, 0]} />
+          <Card className="p-5 bg-surface border-white/5 shadow-xl rounded-3xl">
+            <h3 className="text-sm font-bold text-text mb-6 tracking-tight uppercase opacity-60">Weekly Spending</h3>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={weekly} barSize={28}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} opacity={0.3} />
+                <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--color-text-muted)', fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} />
+                <YAxis tick={{ fontSize: 11, fill: 'var(--color-text-muted)', fontWeight: 600 }} axisLine={false} tickLine={false} width={40} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--color-surface-alt)', opacity: 0.4 }} />
+                <Bar dataKey="amount" fill="#C8E972" radius={[8, 8, 8, 8]} />
               </BarChart>
             </ResponsiveContainer>
           </Card>
@@ -110,26 +110,26 @@ export default function StatsPage() {
 
         {/* Monthly Chart */}
         {tab === 'monthly' && (
-          <Card className="p-4">
-            <h3 className="text-sm font-semibold text-text mb-4">Monthly Summary</h3>
-            <ResponsiveContainer width="100%" height={220}>
+          <Card className="p-5 bg-surface border-white/5 shadow-xl rounded-3xl">
+            <h3 className="text-sm font-bold text-text mb-6 tracking-tight uppercase opacity-60">Monthly Summary</h3>
+            <ResponsiveContainer width="100%" height={240}>
               <LineChart data={monthly}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} width={40} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} opacity={0.3} />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'var(--color-text-muted)', fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} />
+                <YAxis tick={{ fontSize: 11, fill: 'var(--color-text-muted)', fontWeight: 600 }} axisLine={false} tickLine={false} width={40} />
                 <Tooltip content={<CustomTooltip />} />
-                <Line type="monotone" dataKey="income" stroke="#22C55E" strokeWidth={2.5} dot={{ r: 4 }} />
-                <Line type="monotone" dataKey="expense" stroke="#EF4444" strokeWidth={2.5} dot={{ r: 4 }} />
+                <Line type="monotone" dataKey="income" stroke="#22C55E" strokeWidth={4} dot={{ r: 5, fill: '#22C55E', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 8 }} />
+                <Line type="monotone" dataKey="expense" stroke="#EF4444" strokeWidth={4} dot={{ r: 5, fill: '#EF4444', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 8 }} />
               </LineChart>
             </ResponsiveContainer>
-            <div className="flex items-center justify-center gap-6 mt-3">
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-success" />
-                <span className="text-xs text-text-muted">Income</span>
+            <div className="flex items-center justify-center gap-8 mt-6">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
+                <span className="text-[11px] font-bold text-text-muted tracking-wide">INCOME</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-danger" />
-                <span className="text-xs text-text-muted">Expenses</span>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-danger shadow-[0_0_8px_rgba(239,68,68,0.4)]" />
+                <span className="text-[11px] font-bold text-text-muted tracking-wide">EXPENSES</span>
               </div>
             </div>
           </Card>
@@ -137,14 +137,14 @@ export default function StatsPage() {
 
         {/* Category Breakdown */}
         {tab === 'categories' && (
-          <div className="space-y-4">
-            <Card className="p-4">
-              <h3 className="text-sm font-semibold text-text mb-4">Category Breakdown</h3>
+          <div className="space-y-6">
+            <Card className="p-5 bg-surface border-white/5 shadow-xl rounded-3xl">
+              <h3 className="text-sm font-bold text-text mb-4 tracking-tight uppercase opacity-60">Category Breakdown</h3>
               {categories.length === 0 ? (
-                <p className="text-center text-text-muted text-sm py-8">No expenses this month</p>
+                <p className="text-center text-text-muted text-sm py-12 italic opacity-50">No expenses recorded this month</p>
               ) : (
                 <>
-                  <ResponsiveContainer width="100%" height={200}>
+                  <ResponsiveContainer width="100%" height={220}>
                     <PieChart>
                       <Pie
                         data={categories}
@@ -152,46 +152,47 @@ export default function StatsPage() {
                         nameKey="name"
                         cx="50%"
                         cy="50%"
-                        innerRadius={55}
-                        outerRadius={85}
-                        paddingAngle={3}
+                        innerRadius={65}
+                        outerRadius={95}
+                        paddingAngle={4}
                         strokeWidth={0}
                       >
                         {categories.map((entry, i) => (
                           <Cell key={i} fill={entry.color} />
                         ))}
                       </Pie>
+                      <Tooltip />
                     </PieChart>
                   </ResponsiveContainer>
 
                   {/* Legend */}
-                  <div className="space-y-3 mt-4">
+                  <div className="space-y-4 mt-8">
                     {categories.map((cat) => {
                       const IconComp = getIcon(cat.icon);
                       const percentage = totalCategoryAmount ? ((cat.amount / totalCategoryAmount) * 100).toFixed(1) : 0;
                       return (
-                        <div key={cat.categoryId} className="flex items-center gap-3">
+                        <div key={cat.categoryId} className="flex items-center gap-4 group">
                           <div
-                            className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: `${cat.color}20` }}
+                            className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm transition-transform group-hover:scale-110"
+                            style={{ backgroundColor: `${cat.color}15` }}
                           >
-                            <IconComp className="w-4 h-4" style={{ color: cat.color }} />
+                            <IconComp className="w-5 h-5" style={{ color: cat.color }} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm font-medium text-text">{cat.name}</span>
-                              <span className="text-sm font-semibold text-text">
+                            <div className="flex justify-between items-center mb-1.5">
+                              <span className="text-sm font-bold text-text tracking-tight">{cat.name}</span>
+                              <span className="text-sm font-black text-text tabular-nums">
                                 ${cat.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                               </span>
                             </div>
-                            <div className="w-full bg-surface-alt rounded-full h-1.5 mt-1.5">
+                            <div className="w-full bg-surface-alt rounded-full h-2 overflow-hidden shadow-inner">
                               <div
-                                className="h-1.5 rounded-full transition-all duration-500"
+                                className="h-full rounded-full transition-all duration-700 shadow-sm"
                                 style={{ width: `${percentage}%`, backgroundColor: cat.color }}
                               />
                             </div>
                           </div>
-                          <span className="text-xs text-text-muted flex-shrink-0 w-10 text-right">
+                          <span className="text-[11px] font-black tabular-nums text-text-muted flex-shrink-0 w-12 text-right opacity-60">
                             {percentage}%
                           </span>
                         </div>

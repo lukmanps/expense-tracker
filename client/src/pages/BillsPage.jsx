@@ -71,29 +71,29 @@ export default function BillsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="h-full flex flex-col overflow-hidden animate-fade-in bg-bg">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-bg pt-4 px-5 pb-3">
+      <div className="flex-shrink-0 bg-bg pt-4 px-5 pb-3 border-b border-border/10 shadow-sm">
         <div className="flex items-center justify-between mb-5">
-          <h1 className="text-xl font-bold text-text">Bills</h1>
+          <h1 className="text-xl font-bold text-text tracking-tight">Bills</h1>
           <button
             onClick={() => navigate('/add-bill')}
-            className="w-11 h-11 rounded-full bg-primary flex items-center justify-center active:scale-95 transition-transform"
+            className="w-11 h-11 rounded-full bg-primary flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-primary/20"
           >
             <Plus className="w-5 h-5 text-bg-dark" />
           </button>
         </div>
 
         {/* Segmented Tabs */}
-        <div className="flex bg-surface-alt rounded-2xl p-1">
+        <div className="flex bg-surface-alt rounded-[18px] p-1 shadow-inner">
           {tabs.map((t) => (
             <button
               key={t.value}
               onClick={() => setTab(t.value)}
-              className={`flex-1 py-2.5 text-sm font-medium rounded-xl transition-all ${
+              className={`flex-1 py-2.5 text-sm font-bold rounded-[14px] transition-all ${
                 tab === t.value
-                  ? 'bg-primary text-bg-dark shadow-sm'
-                  : 'text-text-secondary'
+                  ? 'bg-primary text-bg-dark shadow-md'
+                  : 'text-text-secondary hover:text-text'
               }`}
             >
               {t.label}
@@ -103,84 +103,88 @@ export default function BillsPage() {
       </div>
 
       {/* Summary */}
-      <div className="px-5 pt-2 pb-4">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-text-muted">
+      <div className="flex-shrink-0 px-5 pt-3 pb-3 bg-bg">
+        <div className="flex items-center justify-between px-2 text-[11px] font-bold uppercase tracking-wider">
+          <span className="text-text-muted opacity-60">
             {pending.length} pending
           </span>
-          <span className={`font-bold ${tab === 'to_receive' ? 'text-success' : 'text-danger'}`}>
+          <span className={`tabular-nums ${tab === 'to_receive' ? 'text-success' : 'text-danger'}`}>
             {tab === 'to_receive' ? '+' : '-'}$
             {pending.reduce((s, t) => s + t.amount, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
           </span>
         </div>
       </div>
 
-      {/* Bill List */}
-      <div className="px-5 pb-8">
+      {/* Bill List - Scrollable */}
+      <div className="flex-1 overflow-y-auto px-5 pb-32">
         {loading ? (
           [...Array(4)].map((_, i) => <CardSkeleton key={i} />)
         ) : pending.length === 0 && completed.length === 0 ? (
-          <EmptyState
-            title="No bills yet"
-            description={`Add a bill to track money you ${tab === 'to_receive' ? 'need to collect' : 'need to pay'}`}
-          />
+          <div className="pt-12">
+            <EmptyState
+              title="No bills yet"
+              description={`Add a bill to track money you ${tab === 'to_receive' ? 'need to collect' : 'need to pay'}`}
+            />
+          </div>
         ) : (
-          <>
+          <div className="space-y-1">
             {/* Pending bills */}
-            <div className="divide-y divide-border/40">
+            <div className="divide-y divide-border/20">
               {pending.map((item) => {
                 const IconComp = item.category ? getIcon(item.category.icon) : null;
                 return (
-                  <div key={item.id} className="flex items-center gap-3 py-3">
+                  <div key={item.id} className="flex items-center gap-4 py-4 group active:bg-surface-alt/20 transition-colors rounded-2xl px-2 -mx-2">
                     {/* Tap to complete */}
                     <button
                       onClick={() => setConfirmBill(item)}
                       className="flex-shrink-0 active:scale-90 transition-transform"
                     >
-                      <Circle className="w-5 h-5 text-text-muted" />
+                      <Circle className="w-6 h-6 text-text-muted opacity-40 hover:text-primary hover:opacity-100 transition-all" />
                     </button>
 
-                    {/* Icon */}
-                    {IconComp && (
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: `${item.category.color}20` }}
-                      >
-                        <IconComp className="w-5 h-5" style={{ color: item.category.color }} />
-                      </div>
-                    )}
+                    {/* Content Area */}
+                    <div className="flex-1 flex items-center gap-3 min-w-0">
+                      {IconComp && (
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-inner"
+                          style={{ backgroundColor: `${item.category.color}15` }}
+                        >
+                          <IconComp className="w-5 h-5 transition-transform group-hover:scale-110" style={{ color: item.category.color }} />
+                        </div>
+                      )}
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-text truncate">{item.name}</p>
-                      <p className="text-[11px] text-text-muted">
-                        {item.category?.name ? `${item.category.name} · ` : ''}
-                        {item.dueDate ? `Due ${format(new Date(item.dueDate), 'MMM d')}` : 'No due date'}
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-text truncate tracking-tight">{item.name}</p>
+                        <p className="text-[11px] font-medium text-text-muted opacity-60 mt-0.5">
+                          {item.category?.name ? `${item.category.name} · ` : ''}
+                          {item.dueDate ? `Due ${format(new Date(item.dueDate), 'MMM d')}` : 'No due date'}
+                        </p>
+                      </div>
                     </div>
 
-                    {/* Amount */}
-                    <p className={`text-sm font-bold flex-shrink-0 ${
-                      tab === 'to_receive' ? 'text-success' : 'text-danger'
-                    }`}>
-                      {tab === 'to_receive' ? '+' : '-'}${item.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </p>
+                    {/* Amount & Actions */}
+                    <div className="flex items-center gap-2">
+                      <p className={`text-[15px] font-black tabular-nums ${
+                        tab === 'to_receive' ? 'text-success' : 'text-text'
+                      }`}>
+                        {tab === 'to_receive' ? '+' : '-'}${item.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </p>
 
-                    {/* Edit */}
-                    <button
-                      onClick={() => navigate(`/add-bill?edit=${item.id}`)}
-                      className="w-7 h-7 flex items-center justify-center text-text-muted active:text-text"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
-
-                    {/* Delete */}
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="w-7 h-7 flex items-center justify-center text-text-muted active:text-danger"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                      <div className="flex flex-col gap-1 -mr-2">
+                        <button
+                          onClick={() => navigate(`/add-bill?edit=${item.id}`)}
+                          className="w-8 h-8 flex items-center justify-center text-text-muted hover:text-primary active:scale-90 transition-all"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="w-8 h-8 flex items-center justify-center text-text-muted hover:text-danger active:scale-90 transition-all"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 );
               })}
@@ -188,83 +192,78 @@ export default function BillsPage() {
 
             {/* Completed bills */}
             {completed.length > 0 && (
-              <>
-                <div className="flex items-center gap-3 pt-4 pb-2">
-                  <span className="text-[10px] uppercase tracking-wide font-bold text-text-secondary">
+              <div className="mt-8">
+                <div className="flex items-center gap-3 pt-4 pb-4">
+                  <span className="text-[10px] uppercase tracking-widest font-black text-text-secondary opacity-40">
                     Completed
                   </span>
-                  <div className="h-px bg-surface-alt flex-1" />
+                  <div className="h-px bg-border/15 flex-1" />
                 </div>
-                <div className="divide-y divide-border/40">
+                <div className="divide-y divide-border/10 space-y-1">
                   {completed.map((item) => {
                     const IconComp = item.category ? getIcon(item.category.icon) : null;
                     return (
-                      <div key={item.id} className="flex items-center gap-3 py-3 opacity-50">
-                        <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" />
+                      <div key={item.id} className="flex items-center gap-4 py-3.5 opacity-40 grayscale-[0.5] px-2 -mx-2">
+                        <CheckCircle2 className="w-6 h-6 text-success flex-shrink-0" />
                         {IconComp && (
                           <div
-                            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: `${item.category.color}20` }}
+                            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-surface-alt/50"
                           >
-                            <IconComp className="w-5 h-5" style={{ color: item.category.color }} />
+                            <IconComp className="w-5 h-5" style={{ color: 'gray' }} />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-text-muted line-through truncate">{item.name}</p>
-                          <p className="text-[11px] text-text-muted">
-                            {item.type === 'to_pay' ? 'Added as expense' : 'Added as income'}
+                          <p className="text-sm font-bold text-text-muted line-through truncate tracking-tight">{item.name}</p>
+                          <p className="text-[10px] font-semibold text-text-muted opacity-60">
+                            {item.type === 'to_pay' ? 'Expense record created' : 'Income record created'}
                           </p>
                         </div>
-                        <p className="text-sm font-bold text-text-muted flex-shrink-0">
+                        <p className="text-sm font-black text-text-muted flex-shrink-0 tabular-nums">
                           ${item.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </p>
                       </div>
                     );
                   })}
                 </div>
-              </>
+              </div>
             )}
-          </>
+          </div>
         )}
       </div>
 
       {/* Confirmation Dialog */}
       {confirmBill && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-sm bg-surface rounded-3xl p-6 space-y-5 shadow-xl">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/70 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-[340px] bg-surface border border-white/5 rounded-[32px] p-6 space-y-6 shadow-2xl">
             <div className="flex justify-center">
-              <div className="w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center">
-                <AlertTriangle className="w-8 h-8 text-primary-dark" />
+              <div className="w-20 h-20 rounded-[28px] bg-primary/10 flex items-center justify-center shadow-inner">
+                <AlertTriangle className="w-10 h-10 text-primary" />
               </div>
             </div>
 
-            <div className="text-center space-y-2">
-              <h3 className="text-lg font-bold text-text">Complete this bill?</h3>
-              <p className="text-sm text-text-secondary leading-relaxed">
-                <span className="font-semibold text-text">{confirmBill.name}</span> for{' '}
-                <span className="font-semibold text-text">
-                  ${confirmBill.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                </span>{' '}
-                will be marked as done and automatically added as{' '}
-                <span className={`font-semibold ${confirmBill.type === 'to_pay' ? 'text-danger' : 'text-success'}`}>
-                  {confirmBill.type === 'to_pay' ? 'an expense' : 'income'}
-                </span>.
+            <div className="text-center space-y-3">
+              <h3 className="text-xl font-bold text-text tracking-tight">Complete bill?</h3>
+              <p className="text-sm text-text-secondary leading-relaxed px-2 opacity-80 font-medium">
+                Mark <span className="text-text font-bold">{confirmBill.name}</span> as done? This will create a{' '}
+                <span className={`font-bold ${confirmBill.type === 'to_pay' ? 'text-danger' : 'text-success'}`}>
+                  {confirmBill.type === 'to_pay' ? 'new expense' : 'income entry'}
+                </span> for ${confirmBill.amount.toLocaleString()}.
               </p>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setConfirmBill(null)}
-                className="flex-1 py-3 rounded-2xl bg-surface-alt text-text font-medium text-sm active:scale-95 transition-transform"
+                className="flex-1 py-4 rounded-2xl bg-surface-alt text-text-secondary font-bold text-sm active:scale-95 transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={handleComplete}
                 disabled={completing}
-                className="flex-1 py-3 rounded-2xl bg-primary text-bg-dark font-semibold text-sm active:scale-95 transition-transform disabled:opacity-50"
+                className="flex-1 py-4 rounded-2xl bg-primary text-bg-dark font-black text-sm active:scale-95 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
               >
-                {completing ? 'Processing...' : 'Confirm'}
+                {completing ? '...' : 'Confirm'}
               </button>
             </div>
           </div>

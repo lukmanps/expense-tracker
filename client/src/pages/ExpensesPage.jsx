@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { expenseService } from '../services/expense.service';
 import { categoryService } from '../services/category.service';
@@ -33,7 +33,7 @@ export default function ExpensesPage() {
   const debouncedSearch = useDebounce(search);
 
   useEffect(() => {
-    categoryService.list('expense').then((res) => setCategories(res.categories)).catch(() => {});
+    categoryService.list('expense').then((res) => setCategories(res.categories)).catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -76,48 +76,55 @@ export default function ExpensesPage() {
     const d = new Date(expense.date);
     const dateKey = format(d, 'yyyy-MM-dd');
     const label = isToday(d) ? 'TODAY' :
-                  isYesterday(d) ? 'YESTERDAY' :
-                  format(d, 'MMM d, yyyy').toUpperCase();
+      isYesterday(d) ? 'YESTERDAY' :
+        format(d, 'MMM d, yyyy').toUpperCase();
     if (!grouped[dateKey]) grouped[dateKey] = { label, items: [] };
     grouped[dateKey].items.push(expense);
   });
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="h-full flex flex-col overflow-hidden animate-fade-in bg-bg">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-bg pt-4 px-5 pb-3">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-bold text-text">Expenses</h1>
+      <div className="flex-shrink-0 bg-bg pt-4 px-5 pb-3 border-b border-border/10 shadow-sm">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 -ml-2 rounded-full active:bg-surface-alt transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 text-text" />
+            </button>
+            <h1 className="text-xl font-bold text-text tracking-tight">Expenses</h1>
+          </div>
           <button
             onClick={() => navigate('/add-expense')}
-            className="w-11 h-11 rounded-full bg-primary flex items-center justify-center active:scale-95 transition-transform"
+            className="w-10 h-10 rounded-full bg-primary flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-primary/20"
           >
-            <Plus className="w-5 h-5 text-text" />
+            <Plus className="w-5 h-5 text-bg-dark" />
           </button>
         </div>
 
         {/* Search */}
-        <div className="relative mb-5">
+        <div className="relative mb-4">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search expenses..."
-            className="w-full pl-11 pr-4 py-3 bg-surface-alt border border-transparent rounded-2xl text-sm text-text placeholder:text-text-muted focus:border-border focus:bg-surface transition-all"
+            className="w-full pl-11 pr-4 py-2.5 bg-surface-alt border border-transparent rounded-2xl text-sm text-text placeholder:text-text-muted focus:border-border focus:bg-surface transition-all shadow-inner"
             id="expense-search"
           />
         </div>
 
-        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-5 px-5 mb-2">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-5 px-5 mb-1">
           {categoryFilters.map((filter) => (
             <button
               key={filter.value}
               onClick={() => setSelectedCategory(filter.value)}
-              className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-medium transition-colors ${
-                selectedCategory === filter.value 
-                  ? 'bg-primary text-text' 
-                  : 'bg-surface border border-surface-alt text-text-secondary shadow-sm'
-              }`}
+              className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${selectedCategory === filter.value
+                  ? 'bg-primary text-bg-dark shadow-md'
+                  : 'bg-surface border border-surface-alt text-text-secondary hover:bg-surface-alt'
+                }`}
             >
               {filter.label}
             </button>
@@ -126,9 +133,9 @@ export default function ExpensesPage() {
       </div>
 
       {/* List */}
-      <div className="px-5 pb-8 mt-2">
+      <div className="flex-1 overflow-y-auto px-5 pt-4 pb-32">
         {loading ? (
-          [...Array(5)].map((_, i) => <CardSkeleton key={i} />)
+          [...Array(6)].map((_, i) => <CardSkeleton key={i} />)
         ) : expenses.length === 0 ? (
           <EmptyState
             title="No expenses yet"
@@ -136,15 +143,15 @@ export default function ExpensesPage() {
           />
         ) : (
           Object.entries(grouped).map(([dateKey, group]) => (
-            <div key={dateKey} className="mb-4">
+            <div key={dateKey} className="mb-6">
               <div className="flex items-center gap-3 mb-2">
-                <span className="text-[10px] uppercase tracking-wide font-bold text-text-secondary">
+                <span className="text-[9px] uppercase tracking-widest font-black text-text-secondary opacity-40">
                   {group.label}
                 </span>
-                <div className="h-px bg-surface-alt flex-1"></div>
+                <div className="h-[0.5px] bg-border/20 flex-1"></div>
               </div>
-              
-              <div className="divide-y divide-border/40">
+
+              <div className="">
                 {group.items.map((expense) => {
                   const IconComp = getIcon(expense.category?.icon);
                   return (
@@ -153,20 +160,20 @@ export default function ExpensesPage() {
                       onDelete={() => handleDelete(expense.id)}
                       onEdit={() => navigate(`/add-expense?edit=${expense.id}`)}
                     >
-                      <div className="flex items-center gap-3 py-2.5">
+                      <div className="flex items-center gap-3 py-2.5 transition-colors bg-bg border-b border-border/5 last:border-0">
                         <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                          style={{ backgroundColor: `${expense.category?.color}20` }}
+                          className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm"
+                          style={{ backgroundColor: `${expense.category?.color}15` }}
                         >
-                          <IconComp className="w-5 h-5" style={{ color: expense.category?.color }} />
+                          <IconComp className="w-4.5 h-4.5 transition-transform group-hover:scale-110" style={{ color: expense.category?.color }} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-text">{expense.category?.name}</p>
-                          <p className="text-[11px] text-text-secondary">
+                          <p className="text-sm font-bold text-text truncate tracking-tight opacity-90">{expense.category?.name}</p>
+                          <p className="text-[10px] font-medium text-text-muted opacity-40 mt-0.5 truncate">
                             {expense.notes || `${format(new Date(expense.date), 'MMM d')} · ${format(new Date(expense.date), 'h:mm a')}`}
                           </p>
                         </div>
-                        <p className="text-sm font-bold text-text flex-shrink-0">
+                        <p className="text-[14px] font-medium tabular-nums text-text flex-shrink-0">
                           -${expense.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </p>
                       </div>
