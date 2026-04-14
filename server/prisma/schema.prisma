@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  phone     String   @unique
+  email     String?
+  name      String
+  password  String
+  avatar    String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  incomes      Income[]
+  expenses     Expense[]
+  categories   Category[]
+  transactions Transaction[]
+
+  @@map("users")
+}
+
+model Category {
+  id           String        @id @default(uuid())
+  name         String
+  icon         String
+  color        String
+  type         String        @default("expense") // "expense" | "income"
+  isDefault    Boolean       @default(false) @map("is_default")
+  userId       String?       @map("user_id")
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenses     Expense[]
+  transactions Transaction[]
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("categories")
+}
+
+model Income {
+  id        String   @id @default(uuid())
+  amount    Float
+  source    String
+  date      DateTime
+  notes     String?
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, date])
+  @@map("incomes")
+}
+
+model Expense {
+  id         String   @id @default(uuid())
+  amount     Float
+  categoryId String   @map("category_id")
+  category   Category @relation(fields: [categoryId], references: [id])
+  date       DateTime
+  notes      String?
+  recurring  Boolean  @default(false)
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, date])
+  @@index([categoryId])
+  @@map("expenses")
+}
+
+model Transaction {
+  id         String    @id @default(uuid())
+  type       String    // "to_pay" | "to_receive"
+  name       String
+  amount     Float
+  categoryId String?   @map("category_id")
+  category   Category? @relation(fields: [categoryId], references: [id])
+  dueDate    DateTime? @map("due_date")
+  status     String    @default("pending") // "pending" | "completed"
+  notes      String?
+  userId     String    @map("user_id")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId, type])
+  @@index([userId, status])
+  @@map("transactions")
+}
