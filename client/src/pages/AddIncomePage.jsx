@@ -74,11 +74,12 @@ export default function AddIncomePage() {
     <div className="min-h-screen bg-bg max-w-lg mx-auto flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-text-secondary">
-          <ChevronLeft className="w-5 h-5" />
+        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-text-secondary p-2 -ml-2">
+          <ChevronLeft className="w-6 h-6" />
+          <span className="text-sm font-bold">Cancel</span>
         </button>
-        <h1 className="text-base font-semibold text-text">{editId ? 'Edit Income' : 'Add Income'}</h1>
-        <button onClick={() => navigate(-1)} className="text-sm text-text-secondary">Cancel</button>
+        <h1 className="text-2xl font-black text-text tracking-tight">{editId ? 'Edit Income' : 'Add Income'}</h1>
+        <div className="w-[88px]" />
       </div>
 
       {/* Amount Input */}

@@ -103,15 +103,15 @@ export default function CategoriesPage() {
   return (
     <div className="min-h-screen bg-bg max-w-lg mx-auto animate-fade-in">
       <div className="flex items-center justify-between px-5 py-4">
-        <button onClick={() => navigate(-1)} className="text-text-secondary">
-          <ChevronLeft className="w-5 h-5" />
+        <button onClick={() => navigate(-1)} className="text-text-secondary p-2 -ml-2">
+          <ChevronLeft className="w-6 h-6" />
         </button>
-        <h1 className="text-base font-semibold text-text">Manage Categories</h1>
+        <h1 className="text-2xl font-black text-text tracking-tight">Manage Categories</h1>
         <button
           onClick={() => setShowForm(true)}
-          className="w-8 h-8 rounded-full bg-primary flex items-center justify-center"
+          className="p-2 -mr-2 active:scale-95 transition-transform"
         >
-          <Plus className="w-4 h-4 text-text" />
+          <Plus className="w-6 h-6 text-text" />
         </button>
       </div>
 

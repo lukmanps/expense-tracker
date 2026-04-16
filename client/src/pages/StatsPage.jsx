@@ -64,23 +64,23 @@ export default function StatsPage() {
     <div className="h-full flex flex-col overflow-hidden animate-fade-in bg-bg">
       {/* Header */}
       <div className="flex-shrink-0 bg-bg px-5 pt-4 pb-3 border-b border-border/10 shadow-sm">
-        <h1 className="text-xl font-bold text-text mb-4">Statistics</h1>
+        <h1 className="text-3xl font-black text-text tracking-tight mb-4">Statistics</h1>
 
         {/* Summary */}
         <div className="grid grid-cols-3 gap-3 mb-5">
-          <Card className="p-3 text-center bg-surface-alt/50 border-none shadow-sm">
+          <Card className="p-3 text-center bg-surface-alt/50 border-none shadow-sm rounded-lg">
             <p className="text-[10px] text-text-muted uppercase font-bold tracking-wider opacity-60">Income</p>
             <p className="text-sm font-black text-success mt-1">
               ${(summary?.totalIncome || 0).toLocaleString()}
             </p>
           </Card>
-          <Card className="p-3 text-center bg-surface-alt/50 border-none shadow-sm">
+          <Card className="p-3 text-center bg-surface-alt/50 border-none shadow-sm rounded-lg">
             <p className="text-[10px] text-text-muted uppercase font-bold tracking-wider opacity-60">Expenses</p>
             <p className="text-sm font-black text-danger mt-1">
               ${(summary?.totalExpense || 0).toLocaleString()}
             </p>
           </Card>
-          <Card className="p-3 text-center bg-surface-alt/50 border-none shadow-sm">
+          <Card className="p-3 text-center bg-surface-alt/50 border-none shadow-sm rounded-lg">
             <p className="text-[10px] text-text-muted uppercase font-bold tracking-wider opacity-60">Balance</p>
             <p className="text-sm font-black text-text mt-1">
               ${(summary?.balance || 0).toLocaleString()}
@@ -94,7 +94,7 @@ export default function StatsPage() {
       <div className="flex-1 overflow-y-auto px-5 pt-6 pb-32">
         {/* Weekly Chart */}
         {tab === 'weekly' && (
-          <Card className="p-5 bg-surface border-white/5 shadow-xl rounded-3xl">
+          <Card className="p-4 bg-surface border-white/5 shadow-xl rounded-lg">
             <h3 className="text-sm font-bold text-text mb-6 tracking-tight uppercase opacity-60">Weekly Spending</h3>
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={weekly} barSize={28}>
@@ -110,7 +110,7 @@ export default function StatsPage() {
 
         {/* Monthly Chart */}
         {tab === 'monthly' && (
-          <Card className="p-5 bg-surface border-white/5 shadow-xl rounded-3xl">
+          <Card className="p-4 bg-surface border-white/5 shadow-xl rounded-lg">
             <h3 className="text-sm font-bold text-text mb-6 tracking-tight uppercase opacity-60">Monthly Summary</h3>
             <ResponsiveContainer width="100%" height={240}>
               <LineChart data={monthly}>
@@ -138,7 +138,7 @@ export default function StatsPage() {
         {/* Category Breakdown */}
         {tab === 'categories' && (
           <div className="space-y-6">
-            <Card className="p-5 bg-surface border-white/5 shadow-xl rounded-3xl">
+            <Card className="p-4 bg-surface border-white/5 shadow-xl rounded-lg">
               <h3 className="text-sm font-bold text-text mb-4 tracking-tight uppercase opacity-60">Category Breakdown</h3>
               {categories.length === 0 ? (
                 <p className="text-center text-text-muted text-sm py-12 italic opacity-50">No expenses recorded this month</p>

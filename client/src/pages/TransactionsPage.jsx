@@ -122,13 +122,13 @@ export default function TransactionsPage() {
         <div className="flex items-center justify-between mb-6">
           <button 
             onClick={() => navigate(-1)} 
-            className="w-11 h-11 rounded-full bg-surface-alt flex items-center justify-center active:scale-95 transition-transform"
+            className="p-2 -ml-2 active:scale-95 transition-transform"
           >
-            <ChevronLeft className="w-5 h-5 text-text" />
+            <ChevronLeft className="w-6 h-6 text-text" />
           </button>
-          <h1 className="text-lg font-medium text-text">Transaction History</h1>
-          <button className="w-11 h-11 rounded-full bg-surface-alt flex items-center justify-center active:scale-95 transition-transform">
-            <Search className="w-5 h-5 text-text" />
+          <h1 className="text-2xl font-black text-text tracking-tight">Transaction History</h1>
+          <button className="p-2 -mr-2 active:scale-95 transition-transform">
+            <Search className="w-6 h-6 text-text" />
           </button>
         </div>
 

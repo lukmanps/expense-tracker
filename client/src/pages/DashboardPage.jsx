@@ -54,32 +54,43 @@ export default function DashboardPage() {
     <div className="h-full flex flex-col overflow-hidden animate-fade-in bg-bg">
       {/* Top Fixed Section: Header, Balance, Summary */}
       <div className="flex-shrink-0">
-        <div 
+        <div
           className="relative overflow-hidden"
-          style={{ 
+          style={{
             background: 'linear-gradient(180deg, rgba(204, 237, 133, 0.35) 0%, rgba(204, 237, 133, 0.1) 50%, transparent 100%)',
           }}
         >
           {/* Subtle texture/overlay */}
           <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
-          
+
           {/* Header */}
-          <div className="px-5 py-5 flex items-center justify-between relative z-10">
-            <div className="w-10 h-10 rounded-full bg-surface-alt flex items-center justify-center border border-border/20">
-              <span className="text-sm font-bold text-text">
-                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-              </span>
+          {/* Header */}
+          <div className="px-4 py-4 flex items-center justify-between relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-surface elevated flex items-center justify-center border border-border/20 shadow-lg shadow-black/5 overflow-hidden">
+                <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                  <span className="text-base font-black text-text tracking-tighter">
+                    {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <p className="text-[10px] text-white/30">Welcome back</p>
+                <h1 className="text-3xl font-black text-white tracking-tight -mt-0.5">
+                  Hi, {user?.name?.split(' ')[0] || 'User'}!
+                </h1>
+              </div>
             </div>
-            <h1 className="text-base font-bold text-text tracking-tight">Main Account</h1>
-            <button className="relative w-10 h-10 rounded-full bg-surface-alt flex items-center justify-center border border-border/20">
+
+            <button className="relative w-11 h-11 rounded-2xl bg-surface flex items-center justify-center border border-border/10 shadow-sm active:scale-95 transition-all">
               <Bell className="w-5 h-5 text-text-secondary" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full border border-bg" />
+              <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-danger rounded-full border-2 border-surface animate-pulse" />
             </button>
           </div>
 
           {/* Balance */}
           <div className="text-center pt-2 pb-5 px-5 relative z-10">
-            <p className="text-[11px] font-bold text-text-muted mb-0.5 uppercase tracking-widest opacity-60">Your Balance</p>
+            <p className="text-[11px] text-white/60 mb-0.5">Your Balance</p>
             <div className="text-text">
               <AmountDisplay amount={summary?.balance || 0} size="xl" />
             </div>
@@ -126,7 +137,7 @@ export default function DashboardPage() {
       <div className="flex-1 overflow-hidden flex flex-col bg-bg rounded-t-[40px] border-t border-x border-border/10 shadow-[0_-12px_40px_rgba(0,0,0,0.1)] -mt-6 relative z-20 pt-8">
         <div className="px-5 flex-shrink-0">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-text opacity-90">Transaction History</h2>
+            <h2 className="text-2xl font-black text-text tracking-tight opacity-90">Transaction History</h2>
             <button
               onClick={() => navigate('/expenses')}
               className="text-xs font-bold text-text-muted hover:text-text flex items-center gap-0.5 transition-colors active:scale-95"
@@ -159,9 +170,8 @@ export default function DashboardPage() {
                         {format(new Date(item.date), 'MMM d')} · {format(new Date(item.date), 'h:mm a')}
                       </p>
                     </div>
-                    <p className={`text-[14px] font-medium flex-shrink-0 tabular-nums ${
-                      item.amount >= 0 ? 'text-success' : 'text-text'
-                    }`}>
+                    <p className={`text-[14px] font-medium flex-shrink-0 tabular-nums ${item.amount >= 0 ? 'text-success' : 'text-text'
+                      }`}>
                       {item.amount >= 0 ? '+' : '-'}${Math.abs(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </p>
                   </div>

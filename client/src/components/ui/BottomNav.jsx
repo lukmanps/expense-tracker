@@ -37,19 +37,19 @@ export default function BottomNav() {
 
       {/* FAB Menu */}
       {showMenu && (
-        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3 animate-fade-in w-full max-w-[200px] px-4">
+        <div className="fixed bottom-36 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3 animate-fade-in w-full max-w-[260px] px-4">
           {fabActions.map((action) => (
             <button
               key={action.label}
               onClick={() => handleFabAction(action.path)}
-              className="group flex items-center justify-between w-full px-4 py-3 bg-surface/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl active:scale-95 transition-all"
+              className="group flex items-center justify-between w-full px-5 py-3 bg-surface border border-white/10 rounded-full shadow-2xl active:scale-95 transition-all"
             >
-              <span className="text-sm font-bold text-text/90 tracking-wide">{action.label}</span>
+              <span className="text-sm font-bold text-text tracking-wide">{action.label}</span>
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shadow-inner"
+                className="w-11 h-11 rounded-full flex items-center justify-center shadow-inner"
                 style={{ backgroundColor: `${action.color}15` }}
               >
-                <action.icon className="w-5 h-5 shadow-sm" style={{ color: action.color }} />
+                <action.icon className="w-5.5 h-5.5" style={{ color: action.color }} />
               </div>
             </button>
           ))}

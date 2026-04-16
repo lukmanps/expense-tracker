@@ -75,12 +75,12 @@ export default function BillsPage() {
       {/* Header */}
       <div className="flex-shrink-0 bg-bg pt-4 px-5 pb-3 border-b border-border/10 shadow-sm">
         <div className="flex items-center justify-between mb-5">
-          <h1 className="text-xl font-bold text-text tracking-tight">Bills</h1>
+          <h1 className="text-3xl font-black text-text tracking-tight">Bills</h1>
           <button
             onClick={() => navigate('/add-bill')}
-            className="w-11 h-11 rounded-full bg-primary flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-primary/20"
+            className="p-2 -mr-2 active:scale-95 transition-transform"
           >
-            <Plus className="w-5 h-5 text-bg-dark" />
+            <Plus className="w-6 h-6 text-text" />
           </button>
         </div>
 

@@ -71,7 +71,7 @@ export default function ProfilePage() {
   return (
     <div className="h-full overflow-y-auto animate-fade-in bg-bg pb-32">
       <div className="px-5 pt-4 pb-3">
-        <h1 className="text-xl font-bold text-text tracking-tight">Profile</h1>
+        <h1 className="text-3xl font-black text-text tracking-tight">Profile</h1>
       </div>
 
       {/* User Card */}

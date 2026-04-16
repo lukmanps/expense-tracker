@@ -68,12 +68,12 @@ export default function IncomePage() {
     <div className="animate-fade-in">
       <div className="sticky top-0 z-40 bg-bg/80 backdrop-blur-lg px-5 pt-4 pb-3">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-xl font-bold text-text">Income</h1>
+          <h1 className="text-3xl font-black text-text tracking-tight">Income</h1>
           <button
             onClick={() => navigate('/add-income')}
-            className="w-10 h-10 rounded-full bg-primary flex items-center justify-center active:scale-95 transition-transform"
+            className="p-2 -mr-2 active:scale-95 transition-transform"
           >
-            <Plus className="w-5 h-5 text-text" />
+            <Plus className="w-6 h-6 text-text" />
           </button>
         </div>
 

@@ -94,13 +94,13 @@ export default function ExpensesPage() {
             >
               <ArrowLeft className="w-5 h-5 text-text" />
             </button>
-            <h1 className="text-xl font-bold text-text tracking-tight">Expenses</h1>
+            <h1 className="text-3xl font-black text-text tracking-tight">Expenses</h1>
           </div>
           <button
             onClick={() => navigate('/add-expense')}
-            className="w-10 h-10 rounded-full bg-primary flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-primary/20"
+            className="p-2 -mr-2 active:scale-95 transition-transform"
           >
-            <Plus className="w-5 h-5 text-bg-dark" />
+            <Plus className="w-6 h-6 text-text" />
           </button>
         </div>
 
