@@ -87,14 +87,16 @@ export default function ExpensesPage() {
       {/* Header */}
       <div className="flex-shrink-0 bg-bg pt-4 px-5 pb-3 border-b border-border/10 shadow-sm">
         <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => navigate(-1)}
               className="p-2 -ml-2 rounded-full active:bg-surface-alt transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-text" />
             </button>
-            <h1 className="text-3xl font-black text-text tracking-tight">Expenses</h1>
+            <h1 className="text-[28px] font-black text-text tracking-tight">
+              Expenses<span className="text-primary">.</span>
+            </h1>
           </div>
           <button
             onClick={() => navigate('/add-expense')}

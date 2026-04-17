@@ -120,13 +120,17 @@ export default function TransactionsPage() {
       {/* Header */}
       <div className="sticky top-0 z-40 bg-bg pt-4 px-5 pb-3">
         <div className="flex items-center justify-between mb-6">
-          <button 
-            onClick={() => navigate(-1)} 
-            className="p-2 -ml-2 active:scale-95 transition-transform"
-          >
-            <ChevronLeft className="w-6 h-6 text-text" />
-          </button>
-          <h1 className="text-2xl font-black text-text tracking-tight">Transaction History</h1>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 -ml-2 rounded-full active:bg-surface-alt transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5 text-text" />
+            </button>
+            <h1 className="text-[28px] font-black text-text tracking-tight">
+              Activity<span className="text-primary">.</span>
+            </h1>
+          </div>
           <button className="p-2 -mr-2 active:scale-95 transition-transform">
             <Search className="w-6 h-6 text-text" />
           </button>
@@ -172,8 +176,8 @@ export default function TransactionsPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`text-[15px] font-bold text-text`}>
-                      {item.amount > 0 ? '+' : '-'}${Math.abs(item.amount).toFixed(2)}
+                    <p className={`text-[15px] font-black tabular-nums text-text group-hover:scale-105 transition-transform`}>
+                      {item.amount > 0 ? '+' : '-'}${Math.abs(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </p>
                     <p className="text-[13px] text-text-secondary mt-0.5">{item.type}</p>
                   </div>

@@ -85,6 +85,20 @@ export default function AddBillPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this bill?')) return;
+    setLoading(true);
+    try {
+      await transactionService.delete(editId);
+      toast.success('Bill deleted');
+      navigate(-1);
+    } catch {
+      toast.error('Failed to delete bill');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const tabs = [
     { value: 'to_pay', label: 'To Pay' },
     { value: 'to_receive', label: 'To Receive' },
@@ -190,10 +204,19 @@ export default function AddBillPage() {
       </div>
 
       {/* Submit */}
-      <div className="mt-auto px-5 pb-6 pt-6">
+      <div className="mt-auto px-5 pb-6 pt-6 flex flex-col gap-3">
         <Button onClick={handleSubmit} size="full" loading={loading}>
           {editId ? 'Update Bill' : 'Add Bill'}
         </Button>
+        {editId && (
+          <button
+            onClick={handleDelete}
+            disabled={loading}
+            className="w-full py-4 text-sm font-bold text-danger hover:bg-danger/10 rounded-2xl transition-all"
+          >
+            Delete Bill
+          </button>
+        )}
       </div>
     </div>
   );

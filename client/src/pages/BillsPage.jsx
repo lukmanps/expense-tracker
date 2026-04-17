@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, CheckCircle2, Circle, Pencil, Trash2, AlertTriangle } from 'lucide-react';
+import { Plus, CheckCircle2, Circle, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { transactionService } from '../services/transaction.service';
 import { getIcon } from '../components/ui/CategoryGrid';
@@ -66,16 +66,18 @@ export default function BillsPage() {
   const completed = filtered.filter((t) => t.status === 'completed');
 
   const tabs = [
-    { value: 'to_pay', label: 'To Pay' },
-    { value: 'to_receive', label: 'To Receive' },
+    { value: 'to_pay', label: 'to pay' },
+    { value: 'to_receive', label: 'to receive' },
   ];
 
   return (
     <div className="h-full flex flex-col overflow-hidden animate-fade-in bg-bg">
       {/* Header */}
-      <div className="flex-shrink-0 bg-bg pt-4 px-5 pb-3 border-b border-border/10 shadow-sm">
+      <div className="flex-shrink-0 bg-bg pt-4 px-5 pb-1">
         <div className="flex items-center justify-between mb-5">
-          <h1 className="text-3xl font-black text-text tracking-tight">Bills</h1>
+          <h1 className="text-[28px] font-black text-text tracking-tight">
+            Bills<span className="text-primary">.</span>
+          </h1>
           <button
             onClick={() => navigate('/add-bill')}
             className="p-2 -mr-2 active:scale-95 transition-transform"
@@ -84,16 +86,16 @@ export default function BillsPage() {
           </button>
         </div>
 
-        {/* Segmented Tabs */}
-        <div className="flex bg-surface-alt rounded-[18px] p-1 shadow-inner">
+        {/* Scrollable pill filter */}
+        <div className="flex gap-2 overflow-x-auto pb-4 hide-scrollbar">
           {tabs.map((t) => (
             <button
               key={t.value}
               onClick={() => setTab(t.value)}
-              className={`flex-1 py-2.5 text-sm font-bold rounded-[14px] transition-all ${
+              className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all uppercase tracking-widest ${
                 tab === t.value
-                  ? 'bg-primary text-bg-dark shadow-md'
-                  : 'text-text-secondary hover:text-text'
+                  ? 'bg-primary text-text shadow-lg shadow-primary/10'
+                  : 'bg-surface-alt/50 text-text-muted opacity-60 hover:opacity-100'
               }`}
             >
               {t.label}
@@ -133,23 +135,30 @@ export default function BillsPage() {
               {pending.map((item) => {
                 const IconComp = item.category ? getIcon(item.category.icon) : null;
                 return (
-                  <div key={item.id} className="flex items-center gap-4 py-4 group active:bg-surface-alt/20 transition-colors rounded-2xl px-2 -mx-2">
+                  <button
+                    key={item.id}
+                    onClick={() => navigate(`/add-bill?edit=${item.id}`)}
+                    className="flex items-center gap-4 py-4 w-full text-left group active:bg-surface-alt/10 transition-colors rounded-2xl px-2 -mx-2"
+                  >
                     {/* Tap to complete */}
-                    <button
-                      onClick={() => setConfirmBill(item)}
-                      className="flex-shrink-0 active:scale-90 transition-transform"
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setConfirmBill(item);
+                      }}
+                      className="flex-shrink-0 active:scale-90 transition-transform p-1 cursor-pointer"
                     >
                       <Circle className="w-6 h-6 text-text-muted opacity-40 hover:text-primary hover:opacity-100 transition-all" />
-                    </button>
+                    </div>
 
                     {/* Content Area */}
-                    <div className="flex-1 flex items-center gap-3 min-w-0">
+                    <div className="flex-1 flex items-center gap-4 min-w-0">
                       {IconComp && (
                         <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-inner"
+                          className="w-12 h-12 rounded-[14px] flex items-center justify-center flex-shrink-0 shadow-inner group-active:scale-95 transition-transform"
                           style={{ backgroundColor: `${item.category.color}15` }}
                         >
-                          <IconComp className="w-5 h-5 transition-transform group-hover:scale-110" style={{ color: item.category.color }} />
+                          <IconComp className="w-6 h-6" style={{ color: item.category.color }} />
                         </div>
                       )}
 
@@ -162,30 +171,14 @@ export default function BillsPage() {
                       </div>
                     </div>
 
-                    {/* Amount & Actions */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex-shrink-0">
                       <p className={`text-[15px] font-black tabular-nums ${
                         tab === 'to_receive' ? 'text-success' : 'text-text'
-                      }`}>
+                       }`}>
                         {tab === 'to_receive' ? '+' : '-'}${item.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </p>
-
-                      <div className="flex flex-col gap-1 -mr-2">
-                        <button
-                          onClick={() => navigate(`/add-bill?edit=${item.id}`)}
-                          className="w-8 h-8 flex items-center justify-center text-text-muted hover:text-primary active:scale-90 transition-all"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          className="w-8 h-8 flex items-center justify-center text-text-muted hover:text-danger active:scale-90 transition-all"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>

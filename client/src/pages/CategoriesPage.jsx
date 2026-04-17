@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Plus, Trash2, Edit3 } from 'lucide-react';
+import { ChevronLeft, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { categoryService } from '../services/category.service';
 import Card from '../components/ui/Card';
@@ -106,7 +106,9 @@ export default function CategoriesPage() {
         <button onClick={() => navigate(-1)} className="text-text-secondary p-2 -ml-2">
           <ChevronLeft className="w-6 h-6" />
         </button>
-        <h1 className="text-2xl font-black text-text tracking-tight">Manage Categories</h1>
+        <h1 className="text-[28px] font-black text-text tracking-tight">
+          Categories<span className="text-primary">.</span>
+        </h1>
         <button
           onClick={() => setShowForm(true)}
           className="p-2 -mr-2 active:scale-95 transition-transform"
@@ -126,45 +128,50 @@ export default function CategoriesPage() {
         />
       </div>
 
-      <div className="px-5 space-y-2">
+      <div className="px-5 pt-4 pb-24">
         {loading ? (
-          [...Array(5)].map((_, i) => <CardSkeleton key={i} />)
+          <div className="grid grid-cols-4 gap-x-2 gap-y-6">
+            {[...Array(12)].map((_, i) => (
+              <div key={i} className="flex flex-col items-center animate-pulse">
+                <div className="w-[56px] h-[56px] rounded-[18px] bg-border/20 mb-2" />
+                <div className="w-12 h-2.5 rounded-full bg-border/20" />
+              </div>
+            ))}
+          </div>
         ) : (
-          categories.map((cat) => {
-            const IconComp = getIcon(cat.icon);
-            return (
-              <Card key={cat.id} className="p-3.5">
-                <div className="flex items-center gap-3">
+          <div className="grid grid-cols-4 gap-x-2 gap-y-6">
+            {categories.map((cat) => {
+              const IconComp = getIcon(cat.icon);
+              return (
+                <button
+                  key={cat.id}
+                  onClick={!cat.isDefault ? () => openEdit(cat) : undefined}
+                  disabled={cat.isDefault}
+                  title={cat.isDefault ? 'System Category (Cannot be edited)' : 'Edit Custom Category'}
+                  className={`flex flex-col items-center justify-start group transition-all relative ${
+                    !cat.isDefault ? 'cursor-pointer active:scale-95' : 'opacity-80 grayscale-[0.2]'
+                  }`}
+                >
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    className={`w-[56px] h-[56px] rounded-[18px] flex items-center justify-center flex-shrink-0 mb-2 transition-transform shadow-inner ${
+                      !cat.isDefault ? 'group-hover:ring-2 ring-border/50 ring-offset-2 ring-offset-bg' : ''
+                    }`}
                     style={{ backgroundColor: `${cat.color}20` }}
                   >
-                    <IconComp className="w-5 h-5" style={{ color: cat.color }} />
+                    <IconComp className="w-6 h-6" style={{ color: cat.color }} />
+                    {!cat.isDefault && (
+                       <div className="absolute top-0 flex-shrink-0 right-0 w-3 h-3 bg-primary rounded-full border-2 border-bg shadow-sm" />
+                    )}
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-text">{cat.name}</p>
-                    <p className="text-xs text-text-muted">{cat.isDefault ? 'Default' : 'Custom'}</p>
-                  </div>
-                  {!cat.isDefault && (
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => openEdit(cat)}
-                        className="p-2 rounded-lg hover:bg-surface-alt"
-                      >
-                        <Edit3 className="w-4 h-4 text-text-muted" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(cat.id)}
-                        className="p-2 rounded-lg hover:bg-surface-alt"
-                      >
-                        <Trash2 className="w-4 h-4 text-danger" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            );
-          })
+                  <p className={`text-[11px] font-bold tracking-tight text-center truncate w-full px-1 ${
+                    cat.isDefault ? 'text-text-secondary/80' : 'text-text'
+                  }`}>
+                    {cat.name}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
         )}
       </div>
 
@@ -194,7 +201,7 @@ export default function CategoriesPage() {
                         : 'bg-surface-alt hover:bg-border'
                     }`}
                   >
-                    <IconComp className="w-5 h-5 text-text" />
+                    <IconComp className={`w-5 h-5 ${formData.icon === icon ? 'text-[#0a0a0b]' : 'text-text'}`} />
                   </button>
                 );
               })}
@@ -218,9 +225,25 @@ export default function CategoriesPage() {
             </div>
           </div>
 
-          <Button onClick={handleSave} size="full" loading={saving}>
-            {editingId ? 'Update' : 'Create'} Category
-          </Button>
+          <div className="pt-4 flex flex-col gap-3">
+            <Button onClick={handleSave} size="full" loading={saving}>
+              {editingId ? 'Update Category' : 'Create Category'}
+            </Button>
+            {editingId && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to delete this category?')) {
+                    handleDelete(editingId);
+                    closeForm();
+                  }
+                }}
+                className="w-full py-4 text-sm font-bold text-danger hover:bg-danger/10 rounded-xl transition-colors"
+              >
+                Delete Category
+              </button>
+            )}
+          </div>
         </div>
       </BottomSheet>
     </div>

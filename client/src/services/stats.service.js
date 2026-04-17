@@ -6,5 +6,6 @@ export const statsService = {
   monthly: () => api.get('/stats/monthly'),
   categoryBreakdown: () => api.get('/stats/categories'),
   recentActivity: (limit) => api.get('/stats/recent', { limit }),
+  topExpenses: (limit) => api.get('/stats/top-expenses', { params: { limit } }),
   exportCSV: () => api.get('/stats/export'),
 };

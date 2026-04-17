@@ -66,31 +66,31 @@ export default function DashboardPage() {
           {/* Header */}
           {/* Header */}
           <div className="px-4 py-4 flex items-center justify-between relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-surface elevated flex items-center justify-center border border-border/20 shadow-lg shadow-black/5 overflow-hidden">
-                <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                  <span className="text-base font-black text-text tracking-tighter">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-2xl bg-surface elevated flex items-center justify-center border border-border/20 shadow-lg shadow-black/5 overflow-hidden">
+                <div className="w-full h-full bg-gradient-to-br from-primary/90 to-primary/80 flex items-center justify-center">
+                  <span className="text-sm font-bold text-text tracking-tighter">
                     {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                   </span>
                 </div>
               </div>
               <div>
-                <p className="text-[10px] text-white/30">Welcome back</p>
-                <h1 className="text-3xl font-black text-white tracking-tight -mt-0.5">
-                  Hi, {user?.name?.split(' ')[0] || 'User'}!
+                <p className="text-xs text-text/50">Welcome</p>
+                <h1 className="text-lg font-medium text-text tracking-tight -mt-0.5">
+                  {user?.name?.split(' ')[0] || 'User'}<span className="text-primary">,</span>
                 </h1>
               </div>
             </div>
 
-            <button className="relative w-11 h-11 rounded-2xl bg-surface flex items-center justify-center border border-border/10 shadow-sm active:scale-95 transition-all">
+            {/* <button className="relative w-11 h-11 rounded-2xl bg-surface flex items-center justify-center border border-border/10 shadow-sm active:scale-95 transition-all">
               <Bell className="w-5 h-5 text-text-secondary" />
               <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-danger rounded-full border-2 border-surface animate-pulse" />
-            </button>
+            </button> */}
           </div>
 
           {/* Balance */}
           <div className="text-center pt-2 pb-5 px-5 relative z-10">
-            <p className="text-[11px] text-white/60 mb-0.5">Your Balance</p>
+            <p className="text-[11px] text-text/60 mb-0.5">Your Balance</p>
             <div className="text-text">
               <AmountDisplay amount={summary?.balance || 0} size="xl" />
             </div>
@@ -110,16 +110,16 @@ export default function DashboardPage() {
               <div className="flex items-center gap-4">
                 <ArrowUpRight className="w-8 h-8 text-danger/80" />
                 <div>
-                  <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider opacity-60">Expenses</p>
-                  <p className="text-base font-black text-text">
+                  <p className="text-xs text-text-muted opacity-60">Expenses</p>
+                  <p className="text-base font-bold text-text">
                     -${(summary?.totalExpense || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-4 text-right">
                 <div>
-                  <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider opacity-60">Income</p>
-                  <p className="text-base font-black text-text">
+                  <p className="text-xs text-text-muted opacity-60">Income</p>
+                  <p className="text-base font-bold text-text">
                     +${(summary?.totalIncome || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
@@ -136,8 +136,8 @@ export default function DashboardPage() {
       {/* Scrollable Transaction History Section */}
       <div className="flex-1 overflow-hidden flex flex-col bg-bg rounded-t-[40px] border-t border-x border-border/10 shadow-[0_-12px_40px_rgba(0,0,0,0.1)] -mt-6 relative z-20 pt-8">
         <div className="px-5 flex-shrink-0">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-black text-text tracking-tight opacity-90">Transaction History</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-text tracking-tight opacity-90">Transaction History</h2>
             <button
               onClick={() => navigate('/expenses')}
               className="text-xs font-bold text-text-muted hover:text-text flex items-center gap-0.5 transition-colors active:scale-95"

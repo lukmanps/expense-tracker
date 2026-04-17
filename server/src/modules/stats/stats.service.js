@@ -185,3 +185,29 @@ export async function exportCSV(userId) {
 
   return csv;
 }
+
+export async function getTopExpenses(userId, limit = 5) {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+  const expenses = await prisma.expense.findMany({
+    where: {
+      userId,
+      date: { gte: startOfMonth, lte: endOfMonth },
+    },
+    include: { category: true },
+    orderBy: { amount: 'desc' },
+    take: limit,
+  });
+
+  return expenses.map((e) => ({
+    id: e.id,
+    amount: e.amount,
+    name: e.notes || e.category.name,
+    categoryName: e.category.name,
+    icon: e.category.icon,
+    color: e.category.color,
+    date: e.date,
+  }));
+}

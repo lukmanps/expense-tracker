@@ -8,5 +8,6 @@ export default async function statsRoutes(fastify) {
   fastify.get('/monthly', statsController.monthly);
   fastify.get('/categories', statsController.categoryBreakdown);
   fastify.get('/recent', statsController.recentActivity);
+  fastify.get('/top-expenses', statsController.topExpenses);
   fastify.get('/export', statsController.exportData);
 }

@@ -32,3 +32,9 @@ export async function exportData(request, reply) {
   reply.header('Content-Disposition', 'attachment; filename="expense-tracker-export.csv"');
   return reply.send(csv);
 }
+
+export async function topExpenses(request, reply) {
+  const limit = parseInt(request.query.limit) || 5;
+  const data = await statsService.getTopExpenses(request.user.id, limit);
+  return reply.send({ data });
+}

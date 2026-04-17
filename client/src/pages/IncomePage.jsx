@@ -67,8 +67,10 @@ export default function IncomePage() {
   return (
     <div className="animate-fade-in">
       <div className="sticky top-0 z-40 bg-bg/80 backdrop-blur-lg px-5 pt-4 pb-3">
-        <div className="flex items-center justify-between mb-3">
-          <h1 className="text-3xl font-black text-text tracking-tight">Income</h1>
+        <div className="flex items-center justify-between mb-5">
+          <h1 className="text-[28px] font-black text-text tracking-tight">
+            Income<span className="text-primary">.</span>
+          </h1>
           <button
             onClick={() => navigate('/add-income')}
             className="p-2 -mr-2 active:scale-95 transition-transform"
@@ -106,7 +108,7 @@ export default function IncomePage() {
               >
                 <div className="py-2.5">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-success/10 flex-shrink-0">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-success/10 flex-shrink-0 group-active:scale-95 transition-transform">
                       <SourceIcon className="w-5 h-5 text-success" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -115,7 +117,7 @@ export default function IncomePage() {
                         {income.notes || format(new Date(income.date), 'MMM d, yyyy')}
                       </p>
                     </div>
-                    <p className="text-sm font-semibold text-success flex-shrink-0">
+                    <p className="text-sm font-semibold text-success flex-shrink-0 tabular-nums">
                       +${income.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
