@@ -65,32 +65,35 @@ export default function StatsPage() {
 
   return (
     <div className="h-full flex flex-col overflow-hidden animate-fade-in bg-bg">
-      {/* Integrated Overview Section */}
-      <div className="flex-shrink-0 bg-bg px-5 pt-4">
-        <div className="flex items-center justify-between mb-8">
-           <h1 className="text-[32px] font-black text-text tracking-tight">
-            Statistics<span className="text-primary">.</span>
-          </h1>
-        </div>
+      {/* Top Section */}
+      <div className="flex-shrink-0 relative overflow-hidden pb-4"
+        style={{
+          background: 'linear-gradient(180deg, rgba(204, 237, 133, 0.15) 0%, transparent 100%)',
+        }}
+      >
+        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
 
-        {/* Unified Overview Card */}
-        <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-primary/10 via-surface-alt/50 to-surface-alt/20 border border-border/10 p-6 mb-8">
-           <div className="absolute top-0 right-0 -mr-8 -mt-8 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
-           
-           <div className="flex justify-around items-center relative z-10 py-1">
-               <div className="flex flex-col items-center">
-                 <span className="text-[10px] font-black text-success/60 uppercase tracking-[0.2em] mb-1">Income</span>
-                 <span className="text-2xl font-black text-success tracking-tighter">${(summary?.totalIncome || 0).toLocaleString()}</span>
-               </div>
-               <div className="h-8 w-px bg-border/20 mx-4" />
-               <div className="flex flex-col items-center">
-                 <span className="text-[10px] font-black text-danger/60 uppercase tracking-[0.2em] mb-1">Expense</span>
-                 <span className="text-2xl font-black text-danger tracking-tighter">${(summary?.totalExpense || 0).toLocaleString()}</span>
-               </div>
-           </div>
-        </div>
+        <div className="px-5 pt-4 relative z-10">
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-[32px] font-black text-text tracking-tight">
+              Statistics<span className="text-primary">.</span>
+            </h1>
+          </div>
 
-        <FilterChips options={tabs} selected={tab} onSelect={setTab} />
+          <div className="flex justify-around items-center mb-10">
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] font-black text-success/70 uppercase tracking-widest mb-1">+ Income</span>
+              <span className="text-[28px] font-black text-success tracking-tighter leading-none">${(summary?.totalIncome || 0).toLocaleString()}</span>
+            </div>
+            <div className="h-8 w-px bg-border/20 mx-4" />
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] font-black text-danger/70 uppercase tracking-widest mb-1">- Expense</span>
+              <span className="text-[28px] font-black text-danger tracking-tighter leading-none">${(summary?.totalExpense || 0).toLocaleString()}</span>
+            </div>
+          </div>
+
+          <FilterChips options={tabs} selected={tab} onSelect={setTab} />
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 pt-6 pb-32">
@@ -99,15 +102,15 @@ export default function StatsPage() {
           <div className="space-y-10">
             <div>
               <div className="flex items-center gap-3 mb-8 px-1">
-                <span className="text-[10px] uppercase tracking-widest font-black text-text-secondary opacity-30">
+                <span className="text-sm text-text-secondary opacity-80">
                   {tab === 'weekly' ? 'Weekly Activity' : 'Monthly Growth'}
                 </span>
-                <div className="h-px bg-surface-alt flex-1" />
+                <div className="h-px bg-surface-alt flex-1 dark:bg-surface-alt/10" />
               </div>
 
               {tab === 'weekly' ? (
-                <div className="bg-surface-alt/10 rounded-[40px] p-8 border border-border/5">
-                  <ResponsiveContainer width="100%" height={260}>
+                <div className="bg-surface-alt/10 rounded-lg border border-border/5">
+                  <ResponsiveContainer width="100%" height={240}>
                     <BarChart data={weekly} barSize={36}>
                       <defs>
                         <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
@@ -124,16 +127,16 @@ export default function StatsPage() {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className="bg-surface-alt/10 rounded-[40px] p-8 border border-border/5">
-                  <ResponsiveContainer width="100%" height={260}>
+                <div className="bg-surface-alt/10 rounded-[32px] p-5 border border-border/5">
+                  <ResponsiveContainer width="100%" height={240}>
                     <AreaChart data={monthly}>
                       <defs>
                         <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#22C55E" stopOpacity={0.3} />
+                          <stop offset="5%" stopColor="#22C55E" stopOpacity={0.2} />
                           <stop offset="95%" stopColor="#22C55E" stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3} />
+                          <stop offset="5%" stopColor="#EF4444" stopOpacity={0.2} />
                           <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
                         </linearGradient>
                       </defs>
@@ -141,8 +144,8 @@ export default function StatsPage() {
                       <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 800 }} axisLine={false} tickLine={false} dy={15} />
                       <YAxis tick={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 800 }} axisLine={false} tickLine={false} width={35} />
                       <Tooltip content={<CustomTooltip />} />
-                      <Area type="monotone" dataKey="income" stroke="#22C55E" strokeWidth={4} fillOpacity={1} fill="url(#colorIncome)" />
-                      <Area type="monotone" dataKey="expense" stroke="#EF4444" strokeWidth={4} fillOpacity={1} fill="url(#colorExpense)" />
+                      <Area type="monotone" dataKey="income" stroke="#22C55E" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
+                      <Area type="monotone" dataKey="expense" stroke="#EF4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExpense)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -152,7 +155,7 @@ export default function StatsPage() {
             {/* Top 5 Expenses section */}
             <div>
               <div className="flex items-center gap-3 mb-6 px-1">
-                <span className="text-[10px] uppercase tracking-widest font-black text-text-secondary opacity-30">
+                <span className="text-sm text-text-secondary opacity-30">
                   Top 5 Expenses
                 </span>
                 <div className="h-px bg-surface-alt flex-1" />
@@ -161,19 +164,16 @@ export default function StatsPage() {
                 {topExpenses.map((item, idx) => {
                   const IconComp = getIcon(item.icon);
                   return (
-                    <div key={idx} className="flex items-center gap-4 py-3.5 px-2">
-                       <div className="w-11 h-11 rounded-[14px] flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${item.color}15` }}>
-                         <IconComp className="w-5.5 h-5.5" style={{ color: item.color }} />
-                       </div>
-                       <div className="flex-1 min-w-0">
-                         <p className="text-sm font-bold text-text truncate tracking-tight">{item.name || item.categoryName}</p>
-                         <p className="text-[10px] font-black text-text-muted opacity-40 uppercase tracking-widest mt-0.5">
-                           {item.categoryName}
-                         </p>
-                       </div>
-                       <p className="text-[15px] font-black tabular-nums text-text">
-                         -${item.amount.toLocaleString()}
-                       </p>
+                    <div key={idx} className="flex items-center gap-3 py-2 px-1">
+                      <div className="w-8 h-8 rounded-[10px] flex items-center justify-center flex-shrink-0 bg-surface-alt/20" style={{ backgroundColor: `${item.color}15` }}>
+                        <IconComp className="w-4 h-4" style={{ color: item.color }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-bold text-text truncate tracking-tight opacity-90">{item.name || item.categoryName}</p>
+                      </div>
+                      <p className="text-[13px] font-black tabular-nums text-text border-b border-border/10 pb-0.5">
+                        -${item.amount.toLocaleString()}
+                      </p>
                     </div>
                   );
                 })}
@@ -198,50 +198,50 @@ export default function StatsPage() {
               ) : (
                 <div className="space-y-6">
                   {/* Visual Distribution Segment Bar */}
-                  <div className="flex h-5 w-full rounded-full overflow-hidden shadow-inner bg-surface-alt/20 mb-8 border border-border/5">
+                  <div className="flex h-3 w-full rounded-full overflow-hidden bg-surface-alt/20 mb-6 border border-border/5">
                     {categories.map((cat, i) => {
                       const percentage = totalCategoryAmount ? (cat.amount / totalCategoryAmount) * 100 : 0;
                       return (
                         <div
                           key={`seg-${i}`}
                           style={{ width: `${percentage}%`, backgroundColor: cat.color }}
-                          className="h-full first:rounded-l-full last:rounded-r-full hover:scale-y-110 transition-transform cursor-pointer"
+                          className="h-full first:rounded-l-full last:rounded-r-full hover:opacity-80 transition-opacity"
                           title={`${cat.name}: ${percentage.toFixed(1)}%`}
                         />
                       );
                     })}
                   </div>
 
-                  <div className="grid grid-cols-1 gap-1">
+                  <div className="divide-y divide-border/10">
                     {categories.map((cat) => {
                       const IconComp = getIcon(cat.icon);
                       const percentage = totalCategoryAmount ? ((cat.amount / totalCategoryAmount) * 100).toFixed(1) : 0;
                       return (
-                        <div key={cat.categoryId} className="flex items-center gap-4 py-3 px-3 transition-colors hover:bg-surface-alt/20 rounded-2xl group cursor-default">
+                        <div key={cat.categoryId} className="flex items-center gap-3 py-2 group">
                           <div
-                            className="w-11 h-11 rounded-[16px] flex items-center justify-center flex-shrink-0 transition-transform group-hover:rotate-12"
+                            className="w-8 h-8 rounded-[10px] flex items-center justify-center flex-shrink-0"
                             style={{ backgroundColor: `${cat.color}15` }}
                           >
-                            <IconComp className="w-5.5 h-5.5" style={{ color: cat.color }} />
+                            <IconComp className="w-4 h-4" style={{ color: cat.color }} />
                           </div>
                           <div className="flex-1 min-w-0">
-                             <div className="flex justify-between items-center mb-1">
-                               <span className="text-sm font-black text-text tracking-tight uppercase tracking-[0.1em] text-[10px] opacity-40 group-hover:opacity-100 transition-opacity">{cat.name}</span>
-                               <span className="text-[15px] font-black text-text tabular-nums tracking-tighter">
-                                 ${cat.amount.toLocaleString()}
-                               </span>
-                             </div>
-                             <div className="flex items-center gap-2">
-                               <div className="w-full bg-surface-alt/30 rounded-full h-1 overflow-hidden">
-                                 <div
-                                   className="h-full rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(255,255,255,0.1)]"
-                                   style={{ width: `${percentage}%`, backgroundColor: cat.color }}
-                                 />
-                               </div>
-                               <span className="text-[10px] font-black tabular-nums text-text-muted opacity-40 w-8 text-right">
-                                 {percentage}%
-                               </span>
-                             </div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-[13px] font-bold text-text tracking-tight truncate">{cat.name}</span>
+                              <span className="text-[13px] font-black text-text tabular-nums">
+                                ${cat.amount.toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-full bg-surface-alt/30 rounded-full h-[3px] overflow-hidden">
+                                <div
+                                  className="h-full rounded-full transition-all duration-1000"
+                                  style={{ width: `${percentage}%`, backgroundColor: cat.color }}
+                                />
+                              </div>
+                              <span className="text-[9px] font-bold tabular-nums text-text-muted opacity-60 w-8 text-right flex-shrink-0">
+                                {percentage}%
+                              </span>
+                            </div>
                           </div>
                         </div>
                       );
