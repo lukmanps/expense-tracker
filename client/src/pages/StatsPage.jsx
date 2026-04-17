@@ -80,7 +80,7 @@ export default function StatsPage() {
             </h1>
           </div>
 
-          <div className="flex justify-around items-center mb-10">
+          <div className="flex justify-around items-center mb-6">
             <div className="flex flex-col items-center">
               <span className="text-[10px] font-black text-success/70 uppercase tracking-widest mb-1">+ Income</span>
               <span className="text-[28px] font-black text-success tracking-tighter leading-none">${(summary?.totalIncome || 0).toLocaleString()}</span>
@@ -96,12 +96,12 @@ export default function StatsPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 pt-6 pb-32">
+      <div className="flex-1 overflow-y-auto px-5 pt-4 pb-32">
         {/* Weekly/Monthly Chart View */}
         {(tab === 'weekly' || tab === 'monthly') && (
-          <div className="space-y-10">
+          <div className="space-y-6">
             <div>
-              <div className="flex items-center gap-3 mb-8 px-1">
+              <div className="flex items-center gap-3 mb-4 px-1">
                 <span className="text-sm text-text-secondary opacity-80">
                   {tab === 'weekly' ? 'Weekly Activity' : 'Monthly Growth'}
                 </span>
@@ -154,7 +154,7 @@ export default function StatsPage() {
 
             {/* Top 5 Expenses section */}
             <div>
-              <div className="flex items-center gap-3 mb-6 px-1">
+              <div className="flex items-center gap-3 mb-4 px-1">
                 <span className="text-sm text-text-secondary opacity-30">
                   Top 5 Expenses
                 </span>
@@ -184,9 +184,9 @@ export default function StatsPage() {
 
         {/* Category Breakdown */}
         {tab === 'categories' && (
-          <div className="space-y-10">
+          <div className="space-y-6">
             <div>
-              <div className="flex items-center gap-3 mb-8 px-1">
+              <div className="flex items-center gap-3 mb-4 px-1">
                 <span className="text-[10px] uppercase tracking-widest font-black text-text-secondary opacity-30">
                   Distribution Breakdown
                 </span>
@@ -196,9 +196,9 @@ export default function StatsPage() {
               {categories.length === 0 ? (
                 <p className="text-center text-text-muted text-sm py-12 italic opacity-50">No data available</p>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {/* Visual Distribution Segment Bar */}
-                  <div className="flex h-3 w-full rounded-full overflow-hidden bg-surface-alt/20 mb-6 border border-border/5">
+                  <div className="flex h-3 w-full rounded-full overflow-hidden bg-surface-alt/20 mb-4 border border-border/5">
                     {categories.map((cat, i) => {
                       const percentage = totalCategoryAmount ? (cat.amount / totalCategoryAmount) * 100 : 0;
                       return (
