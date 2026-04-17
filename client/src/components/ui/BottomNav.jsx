@@ -58,7 +58,7 @@ export default function BottomNav() {
 
       {/* Nav Bar Container */}
       <div className="fixed bottom-6 left-0 right-0 z-50 px-6 pointer-events-none" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <nav className="max-w-xl mx-auto h-20 bg-surface/70 backdrop-blur-2xl border border-white/5 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] pointer-events-auto overflow-visible relative">
+        <nav className="max-w-xl mx-auto h-20 bg-surface/70 backdrop-blur-2xl border border-white/5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] pointer-events-auto overflow-visible relative">
           <div className="flex items-center justify-around h-full px-4 relative">
             {navItems.map((item, index) => {
               if (item.isFab) {
@@ -66,14 +66,13 @@ export default function BottomNav() {
                   <div key="fab-container" className="relative -top-8">
                     <button
                       onClick={() => setShowMenu((prev) => !prev)}
-                      className={`group relative flex items-center justify-center w-16 h-16 rounded-[22px] shadow-[0_12px_24px_rgba(200,233,114,0.3)] active:scale-90 transition-all duration-300 ${
-                        showMenu ? 'bg-danger' : 'bg-[#C8E972]'
-                      }`}
+                      className={`group relative flex items-center justify-center w-14 h-14 rounded-lg shadow-[0_12px_24px_rgba(200,233,114,0.3)] active:scale-90 transition-all duration-300 ${showMenu ? 'bg-danger' : 'bg-[#C8E972]'
+                        }`}
                       id="fab-add"
                     >
-                      <Plus 
-                        className={`w-8 h-8 text-black transition-transform duration-500 ${showMenu ? 'rotate-[135deg]' : 'rotate-0'}`} 
-                        strokeWidth={2.5} 
+                      <Plus
+                        className={`w-8 h-8 text-black transition-transform duration-500 ${showMenu ? 'rotate-[135deg]' : 'rotate-0'}`}
+                        strokeWidth={2.5}
                       />
                       {/* Sub-glow/Reflected light */}
                       {!showMenu && <div className="absolute inset-0 rounded-[22px] bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />}
@@ -87,8 +86,7 @@ export default function BottomNav() {
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    `relative flex flex-col items-center justify-center h-full px-4 transition-all duration-300 ${
-                      isActive ? 'text-[#C8E972]' : 'text-text/40 hover:text-text/70'
+                    `relative flex flex-col items-center justify-center h-full px-4 transition-all duration-300 ${isActive ? 'text-[#C8E972]' : 'text-text/40 hover:text-text/70'
                     }`
                   }
                   id={`nav-${item.label.toLowerCase()}`}
