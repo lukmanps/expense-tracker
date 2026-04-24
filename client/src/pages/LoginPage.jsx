@@ -45,7 +45,7 @@ export default function LoginPage() {
           <img src="/xpense-logo.png" alt="Xpense Logo" className="w-full h-full object-contain" />
         </div>
         <h1 className="text-2xl font-bold text-text">Welcome Back</h1>
-        <p className="text-sm text-text-secondary mt-1">Sign in to your SpendWise account</p>
+        <p className="text-sm text-text-secondary mt-1">Sign in to your Xpense account</p>
       </div>
 
       {/* Form */}
@@ -96,10 +96,6 @@ export default function LoginPage() {
         <Link to="/register" className="text-primary-dark font-semibold">Sign Up</Link>
       </p>
 
-      {/* Demo credentials */}
-      <div className="mt-6 p-3 bg-surface-alt rounded-xl text-center">
-        <p className="text-xs text-text-muted">Demo: +1234567890 / demo1234</p>
-      </div>
     </div>
   );
 }
