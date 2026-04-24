@@ -67,12 +67,8 @@ export default function DashboardPage() {
           {/* Header */}
           <div className="px-4 py-4 flex items-center justify-between relative z-10">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-2xl bg-surface elevated flex items-center justify-center border border-border/20 shadow-lg shadow-black/5 overflow-hidden">
-                <div className="w-full h-full bg-gradient-to-br from-primary/90 to-primary/80 flex items-center justify-center">
-                  <span className="text-sm font-bold text-text tracking-tighter">
-                    {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                  </span>
-                </div>
+              <div className="w-8 h-8 rounded-2xl overflow-hidden flex items-center justify-center">
+                <img src="/xpense-logo.png" alt="Xpense" className="w-full h-full object-contain" />
               </div>
               <div>
                 <p className="text-xs text-text/50">Welcome</p>

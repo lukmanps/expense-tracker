@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icons.svg'],
+      includeAssets: ['favicon.svg', 'icons.svg', 'xpense-logo.png'],
       manifest: {
         name: 'SpendWise Expense Tracker',
         short_name: 'SpendWise',

@@ -41,8 +41,8 @@ export default function LoginPage() {
     <div className="min-h-screen bg-bg flex flex-col justify-center px-6 py-12 max-w-lg mx-auto">
       {/* Header */}
       <div className="text-center mb-10">
-        <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <span className="text-2xl font-extrabold text-text">S</span>
+        <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4">
+          <img src="/xpense-logo.png" alt="Xpense Logo" className="w-full h-full object-contain" />
         </div>
         <h1 className="text-2xl font-bold text-text">Welcome Back</h1>
         <p className="text-sm text-text-secondary mt-1">Sign in to your SpendWise account</p>
