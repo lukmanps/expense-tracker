@@ -57,8 +57,8 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-bg flex flex-col justify-center px-6 py-12 max-w-lg mx-auto">
       <div className="text-center mb-8">
-        <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4">
-          <img src="/xpense-logo.png" alt="Xpense Logo" className="w-full h-full object-contain" />
+        <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4 bg-black p-2 rounded-lg">
+          <img src="/xpense-logo.png" alt="Xpense Logo" className="w-full h-full object-cover" />
         </div>
         <h1 className="text-2xl font-bold text-text">Create Account</h1>
         <p className="text-sm text-text-secondary mt-1">Start tracking your expenses today</p>

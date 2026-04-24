@@ -5,14 +5,14 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   plugins: [
-    react(), 
+    react(),
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons.svg', 'xpense-logo.png'],
       manifest: {
-        name: 'SpendWise Expense Tracker',
-        short_name: 'SpendWise',
+        name: 'Xpense - Expense Tracker',
+        short_name: 'Xpense',
         description: 'Track expenses, manage income, and gain financial insights with a beautiful mobile-first experience.',
         theme_color: '#FAFAFA',
         background_color: '#FAFAFA',
