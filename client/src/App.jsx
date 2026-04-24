@@ -18,16 +18,19 @@ import ProfilePage from './pages/ProfilePage';
 import CategoriesPage from './pages/CategoriesPage';
 import BillsPage from './pages/BillsPage';
 import AddBillPage from './pages/AddBillPage';
+import EditProfilePage from './pages/EditProfilePage';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuthStore();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg">
-        <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center animate-pulse">
-          <span className="text-xl font-extrabold text-text">S</span>
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-bg gap-4 animate-[fadeIn_0.3s_ease]">
+        <img
+          src="/xpense-logo.png"
+          alt="Xpense"
+          className="w-24 h-24 object-contain animate-pulse"
+        />
       </div>
     );
   }
@@ -95,6 +98,7 @@ export default function App() {
         <Route path="/add-income" element={<ProtectedRoute><AddIncomePage /></ProtectedRoute>} />
         <Route path="/categories" element={<ProtectedRoute><CategoriesPage /></ProtectedRoute>} />
         <Route path="/add-bill" element={<ProtectedRoute><AddBillPage /></ProtectedRoute>} />
+        <Route path="/edit-profile" element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

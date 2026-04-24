@@ -1,5 +1,4 @@
 import prisma from './prisma.js';
-import bcrypt from 'bcryptjs';
 
 const DEFAULT_CATEGORIES = [
   { name: 'Food', icon: 'utensils', color: '#C8E972', type: 'expense' },
@@ -22,7 +21,6 @@ const DEFAULT_CATEGORIES = [
 async function seed() {
   console.log('🌱 Seeding database...');
 
-  // Create default categories
   for (const cat of DEFAULT_CATEGORIES) {
     await prisma.category.upsert({
       where: { id: cat.name.toLowerCase().replace(/\s+/g, '-') + '-default' },
@@ -35,59 +33,6 @@ async function seed() {
     });
   }
   console.log(`✅ Created ${DEFAULT_CATEGORIES.length} default categories`);
-
-  // Create demo user
-  const hashedPassword = await bcrypt.hash('demo1234', 10);
-  const user = await prisma.user.upsert({
-    where: { phone: '+1234567890' },
-    update: {},
-    create: {
-      phone: '+1234567890',
-      email: 'demo@example.com',
-      name: 'Demo User',
-      password: hashedPassword,
-    },
-  });
-  console.log(`✅ Created demo user: ${user.phone}`);
-
-  // Create sample incomes
-  const incomes = [
-    { amount: 5000, source: 'Salary', date: new Date('2026-04-01'), notes: 'Monthly salary', userId: user.id },
-    { amount: 1200, source: 'Freelance', date: new Date('2026-04-05'), notes: 'Web project', userId: user.id },
-    { amount: 300, source: 'Gift', date: new Date('2026-04-10'), notes: 'Birthday gift', userId: user.id },
-  ];
-  for (const income of incomes) {
-    await prisma.income.create({ data: income });
-  }
-  console.log(`✅ Created ${incomes.length} sample incomes`);
-
-  // Create sample expenses
-  const expenses = [
-    { amount: 45.50, categoryId: 'food-default', date: new Date('2026-04-02'), notes: 'Groceries', userId: user.id },
-    { amount: 12.00, categoryId: 'transport-default', date: new Date('2026-04-03'), notes: 'Uber ride', userId: user.id },
-    { amount: 89.99, categoryId: 'shopping-default', date: new Date('2026-04-04'), notes: 'New shirt', userId: user.id },
-    { amount: 150.00, categoryId: 'bills-default', date: new Date('2026-04-05'), notes: 'Electric bill', userId: user.id },
-    { amount: 25.00, categoryId: 'entertainment-default', date: new Date('2026-04-06'), notes: 'Movie tickets', userId: user.id },
-    { amount: 35.00, categoryId: 'food-default', date: new Date('2026-04-07'), notes: 'Restaurant dinner', userId: user.id },
-    { amount: 200.00, categoryId: 'health-default', date: new Date('2026-04-08'), notes: 'Doctor visit', userId: user.id },
-    { amount: 15.99, categoryId: 'entertainment-default', date: new Date('2026-04-09'), notes: 'Netflix', recurring: true, userId: user.id },
-  ];
-  for (const expense of expenses) {
-    await prisma.expense.create({ data: expense });
-  }
-  console.log(`✅ Created ${expenses.length} sample expenses`);
-
-  // Create sample transactions
-  const transactions = [
-    { type: 'to_receive', name: 'Mikel Borle', amount: 350, dueDate: new Date('2026-04-20'), status: 'pending', userId: user.id },
-    { type: 'to_pay', name: 'John Doe', amount: 120, dueDate: new Date('2026-04-15'), status: 'pending', userId: user.id },
-    { type: 'to_receive', name: 'Sarah Khan', amount: 75, dueDate: new Date('2026-04-25'), status: 'completed', userId: user.id },
-    { type: 'to_pay', name: 'Electricity Co.', amount: 200, dueDate: new Date('2026-04-18'), status: 'pending', userId: user.id },
-  ];
-  for (const tx of transactions) {
-    await prisma.transaction.create({ data: tx });
-  }
-  console.log(`✅ Created ${transactions.length} sample transactions`);
 
   console.log('🎉 Seed completed!');
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Home, BarChart3, Plus, Receipt, User, ArrowDownLeft, ArrowUpRight, X } from 'lucide-react';
+import useThemeStore from '../../store/useThemeStore';
 
 const navItems = [
   { to: '/', icon: Home, label: 'Home' },
@@ -19,6 +20,7 @@ const fabActions = [
 export default function BottomNav() {
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
+  const theme = useThemeStore((state) => state.theme);
 
   const handleFabAction = (path) => {
     setShowMenu(false);
@@ -86,7 +88,9 @@ export default function BottomNav() {
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    `relative flex flex-col items-center justify-center h-full px-4 transition-all duration-300 ${isActive ? 'text-[#C8E972]' : 'text-text/40 hover:text-text/70'
+                    `relative flex flex-col items-center justify-center h-full px-4 transition-all duration-300 ${isActive 
+                      ? (theme === 'dark' ? 'text-[#C8E972]' : 'text-text') 
+                      : 'text-text/40 hover:text-text/70'
                     }`
                   }
                   id={`nav-${item.label.toLowerCase()}`}
@@ -98,7 +102,11 @@ export default function BottomNav() {
                         {item.label}
                       </span>
                       {isActive && (
-                        <div className="absolute -bottom-1 w-1 h-1 bg-[#C8E972] rounded-full shadow-[0_0_10px_#C8E972]" />
+                        <div className={`absolute -bottom-1 w-1 h-1 rounded-full ${
+                          theme === 'dark' 
+                            ? 'bg-[#C8E972] shadow-[0_0_10px_#C8E972]' 
+                            : 'bg-text'
+                        }`} />
                       )}
                     </>
                   )}

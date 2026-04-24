@@ -6,9 +6,9 @@ export default function AmountDisplay({ amount, size = 'lg', className = '' }) {
 
   const sizeClasses = {
     sm: 'text-xl font-semibold',
-    md: 'text-2xl font-bold',
-    lg: 'text-4xl font-extrabold',
-    xl: 'text-5xl font-extrabold',
+    md: 'text-2xl font-semibold',
+    lg: 'text-4xl font-semibold',
+    xl: 'text-5xl font-semibold',
   };
 
   return (

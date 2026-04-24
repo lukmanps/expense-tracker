@@ -67,8 +67,10 @@ export default function DashboardPage() {
           {/* Header */}
           <div className="px-4 py-4 flex items-center justify-between relative z-10">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-2xl overflow-hidden flex items-center justify-center">
-                <img src="/xpense-logo.png" alt="Xpense" className="w-full h-full object-contain" />
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
+                <span className="text-sm font-semibold text-white uppercase">
+                  {user?.name?.charAt(0) || 'U'}
+                </span>
               </div>
               <div>
                 <p className="text-xs text-text/50">Welcome</p>
@@ -86,7 +88,7 @@ export default function DashboardPage() {
 
           {/* Balance */}
           <div className="text-center pt-2 pb-5 px-5 relative z-10">
-            <p className="text-[11px] text-text/60 mb-0.5">Your Balance</p>
+            <p className="text-sm text-text/60 mb-0.5">Your Balance</p>
             <div className="text-text">
               <AmountDisplay amount={summary?.balance || 0} size="xl" />
             </div>
@@ -103,19 +105,19 @@ export default function DashboardPage() {
           {/* Integrated Summary Section */}
           <div className="px-8 pb-8 relative z-10">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
                 <ArrowUpRight className="w-8 h-8 text-danger/80" />
                 <div>
                   <p className="text-xs text-text-muted opacity-60">Expenses</p>
-                  <p className="text-base font-bold text-text">
+                  <p className="text-xl font-semibold text-text">
                     -₹{(summary?.totalExpense || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-4 text-right">
+              <div className="flex items-center gap-1 text-right">
                 <div>
                   <p className="text-xs text-text-muted opacity-60">Income</p>
-                  <p className="text-base font-bold text-text">
+                  <p className="text-xl font-semibold text-text">
                     +₹{(summary?.totalIncome || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                 </div>

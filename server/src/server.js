@@ -22,8 +22,9 @@ const fastify = Fastify({
 
 // Plugins
 await fastify.register(cors, {
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: true, // Allow all origins to reflect the request origin
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 });
 
 await fastify.register(rateLimit, {

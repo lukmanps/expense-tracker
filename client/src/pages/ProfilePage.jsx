@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Moon, Sun, LogOut, Download, ChevronRight, User, Phone, Mail, Layers } from 'lucide-react';
+import { Moon, Sun, LogOut, Download, ChevronRight, User, Phone, Mail, Layers, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
 import useAuthStore from '../store/useAuthStore';
 import useThemeStore from '../store/useThemeStore';
@@ -44,10 +44,10 @@ export default function ProfilePage() {
 
   const handleInstallPwa = async () => {
     if (!installPrompt) return;
-    
+
     installPrompt.prompt();
     const { outcome } = await installPrompt.userChoice;
-    
+
     if (outcome === 'accepted') {
       setInstallPrompt(null);
       toast.success('Installing SpendWise...');
@@ -106,7 +106,15 @@ export default function ProfilePage() {
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-[22px] font-medium text-text tracking-tight truncate">{user?.name || 'User'}</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-[22px] font-medium text-text tracking-tight truncate">{user?.name || 'User'}</h2>
+              <button 
+                onClick={() => navigate('/edit-profile')} 
+                className="w-8 h-8 rounded-full bg-surface-alt flex items-center justify-center hover:bg-surface-elevated transition-colors"
+              >
+                <Edit2 className="w-4 h-4 text-text-secondary" />
+              </button>
+            </div>
             <div className="flex items-center gap-3 mt-1 opacity-60">
               <div className="flex items-center gap-1.5">
                 <Phone className="w-3 h-3 text-text" />
@@ -155,7 +163,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div>
+        {/* <div>
           <div className="flex items-center gap-3 mb-6">
             <span className="text-[10px] uppercase tracking-wide font-bold text-text-secondary">
               Management
@@ -188,7 +196,7 @@ export default function ProfilePage() {
               <ChevronRight className="w-5 h-5 text-text-muted opacity-40" />
             </button>
           </div>
-        </div>
+        </div> */}
 
         {/* Logout */}
         <div className="pt-2">

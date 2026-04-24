@@ -81,11 +81,11 @@ export default function StatsPage() {
             </h1>
           </div>
 
-          <div className="flex items-center gap-3 mb-4 px-1">
+          <div className="flex items-center gap-3 mb-6 px-1">
             <ArrowUpRight className="w-8 h-8 text-danger" strokeWidth={3} />
             <div className="flex flex-col">
               <span className="text-xs font-semibold text-text-muted mb-0.5">Total Expense</span>
-              <span className="text-[32px] font-semibold text-text tracking-tighter leading-none">₹{(summary?.totalExpense || 0).toLocaleString()}</span>
+              <span className="text-4xl font-semibold text-text tracking-tighter leading-none">₹{(summary?.totalExpense || 0).toLocaleString()}</span>
             </div>
           </div>
 
@@ -93,7 +93,7 @@ export default function StatsPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 pt-1 pb-32">
+      <div className="flex-1 overflow-y-auto px-5 pb-32">
         {/* Weekly/Monthly Chart View */}
         {(tab === 'weekly' || tab === 'monthly') && (
           <div className="space-y-3">
