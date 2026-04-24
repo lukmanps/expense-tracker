@@ -4,12 +4,14 @@ import { Moon, Sun, LogOut, Download, ChevronRight, User, Phone, Mail, Layers } 
 import { toast } from 'sonner';
 import useAuthStore from '../store/useAuthStore';
 import useThemeStore from '../store/useThemeStore';
+import usePwaStore from '../store/usePwaStore';
 import { statsService } from '../services/stats.service';
 
 export default function ProfilePage() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const { theme, toggleTheme } = useThemeStore();
+  const { installPrompt, setInstallPrompt } = usePwaStore();
   const navigate = useNavigate();
   const [exporting, setExporting] = useState(false);
 
@@ -40,6 +42,18 @@ export default function ProfilePage() {
     toast.success('Logged out');
   };
 
+  const handleInstallPwa = async () => {
+    if (!installPrompt) return;
+    
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+      setInstallPrompt(null);
+      toast.success('Installing SpendWise...');
+    }
+  };
+
   const menuItems = [
     {
       icon: theme === 'dark' ? Sun : Moon,
@@ -65,6 +79,15 @@ export default function ProfilePage() {
       trailing: <ChevronRight className="w-4 h-4 text-text-muted" />,
     },
   ];
+
+  if (installPrompt) {
+    menuItems.push({
+      icon: Download,
+      label: 'Install App',
+      action: handleInstallPwa,
+      trailing: <div className="px-2 py-0.5 rounded-md bg-primary/20 text-primary text-[10px] font-bold uppercase tracking-wider">Install</div>,
+    });
+  }
 
   return (
     <div className="h-full overflow-y-auto animate-fade-in bg-bg pb-32">

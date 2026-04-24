@@ -144,7 +144,7 @@ export default function TransactionsPage() {
               onClick={() => setActiveFilter(filter)}
               className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-medium transition-colors ${
                 activeFilter === filter 
-                  ? 'bg-primary text-text' 
+                  ? 'bg-primary text-bg-dark' 
                   : 'bg-surface border border-surface-alt text-text-secondary shadow-sm'
               }`}
             >
@@ -177,7 +177,7 @@ export default function TransactionsPage() {
                   </div>
                   <div className="text-right">
                     <p className={`text-[15px] font-black tabular-nums text-text group-hover:scale-105 transition-transform`}>
-                      {item.amount > 0 ? '+' : '-'}${Math.abs(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      {item.amount > 0 ? '+' : '-'}₹{Math.abs(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </p>
                     <p className="text-[13px] text-text-secondary mt-0.5">{item.type}</p>
                   </div>

@@ -89,7 +89,7 @@ export default function AddExpensePage() {
       <div className="text-center py-8 px-5">
         <p className="text-sm text-text-muted mb-2">Enter amount</p>
         <div className="flex items-center justify-center text-[40px] font-bold text-text">
-          <span className="mr-1 text-text-muted">$</span>
+          <span className="mr-1 text-text-muted">₹</span>
           <input
             type="number"
             autoFocus

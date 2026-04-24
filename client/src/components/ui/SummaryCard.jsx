@@ -17,7 +17,7 @@ export default function SummaryCard({ title, amount, icon: Icon, color, trend })
         <div className="flex-1 min-w-0">
           <p className="text-xs text-text-muted font-medium uppercase tracking-wider">{title}</p>
           <p className={`text-lg font-bold ${isPositive ? 'text-text' : 'text-danger'}`}>
-            ${Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            ₹{Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
           </p>
         </div>
         {trend !== undefined && (

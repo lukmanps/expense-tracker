@@ -13,7 +13,7 @@ export default function AmountDisplay({ amount, size = 'lg', className = '' }) {
 
   return (
     <span className={`${sizeClasses[size]} tracking-tight ${className}`}>
-      ${formatted}
+      ₹{formatted}
     </span>
   );
 }

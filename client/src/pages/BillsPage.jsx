@@ -94,7 +94,7 @@ export default function BillsPage() {
               onClick={() => setTab(t.value)}
               className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all uppercase tracking-widest ${
                 tab === t.value
-                  ? 'bg-primary text-text shadow-lg shadow-primary/10'
+                  ? 'bg-primary text-bg-dark shadow-lg shadow-primary/10'
                   : 'bg-surface-alt/50 text-text-muted opacity-60 hover:opacity-100'
               }`}
             >
@@ -111,7 +111,7 @@ export default function BillsPage() {
             {pending.length} pending
           </span>
           <span className={`tabular-nums ${tab === 'to_receive' ? 'text-success' : 'text-danger'}`}>
-            {tab === 'to_receive' ? '+' : '-'}$
+            {tab === 'to_receive' ? '+' : '-'}₹
             {pending.reduce((s, t) => s + t.amount, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
           </span>
         </div>
@@ -175,7 +175,7 @@ export default function BillsPage() {
                       <p className={`text-[15px] font-black tabular-nums ${
                         tab === 'to_receive' ? 'text-success' : 'text-text'
                        }`}>
-                        {tab === 'to_receive' ? '+' : '-'}${item.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        {tab === 'to_receive' ? '+' : '-'}₹{item.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </p>
                     </div>
                   </button>
@@ -212,7 +212,7 @@ export default function BillsPage() {
                           </p>
                         </div>
                         <p className="text-sm font-black text-text-muted flex-shrink-0 tabular-nums">
-                          ${item.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          ₹{item.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </p>
                       </div>
                     );
@@ -240,7 +240,7 @@ export default function BillsPage() {
                 Mark <span className="text-text font-bold">{confirmBill.name}</span> as done? This will create a{' '}
                 <span className={`font-bold ${confirmBill.type === 'to_pay' ? 'text-danger' : 'text-success'}`}>
                   {confirmBill.type === 'to_pay' ? 'new expense' : 'income entry'}
-                </span> for ${confirmBill.amount.toLocaleString()}.
+                </span> for ₹{confirmBill.amount.toLocaleString()}.
               </p>
             </div>
 

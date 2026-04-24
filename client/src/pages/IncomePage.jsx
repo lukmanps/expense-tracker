@@ -118,7 +118,7 @@ export default function IncomePage() {
                       </p>
                     </div>
                     <p className="text-sm font-semibold text-success flex-shrink-0 tabular-nums">
-                      +${income.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      +₹{income.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                 </div>

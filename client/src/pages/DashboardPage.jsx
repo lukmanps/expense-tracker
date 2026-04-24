@@ -98,7 +98,7 @@ export default function DashboardPage() {
               <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 bg-primary/10 backdrop-blur-md rounded-full border border-white/5">
                 <TrendingUp className="w-3 h-3 text-primary" />
                 <span className="text-[10px] font-bold text-text">
-                  You saved ${Math.abs(summary?.balance || 0).toLocaleString()} this month
+                  You saved ₹{Math.abs(summary?.balance || 0).toLocaleString()} this month
                 </span>
               </div>
             )}
@@ -112,7 +112,7 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-xs text-text-muted opacity-60">Expenses</p>
                   <p className="text-base font-bold text-text">
-                    -${(summary?.totalExpense || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    -₹{(summary?.totalExpense || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>
@@ -120,7 +120,7 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-xs text-text-muted opacity-60">Income</p>
                   <p className="text-base font-bold text-text">
-                    +${(summary?.totalIncome || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    +₹{(summary?.totalIncome || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
                 <ArrowDownLeft className="w-8 h-8 text-success/80" />
@@ -172,7 +172,7 @@ export default function DashboardPage() {
                     </div>
                     <p className={`text-[14px] font-medium flex-shrink-0 tabular-nums ${item.amount >= 0 ? 'text-success' : 'text-text'
                       }`}>
-                      {item.amount >= 0 ? '+' : '-'}${Math.abs(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      {item.amount >= 0 ? '+' : '-'}₹{Math.abs(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                 );

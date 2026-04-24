@@ -176,7 +176,7 @@ export default function ExpensesPage() {
                           </p>
                         </div>
                         <p className="text-[14px] font-medium tabular-nums text-text flex-shrink-0">
-                          -${expense.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          -₹{expense.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </p>
                       </div>
                     </SwipeableRow>

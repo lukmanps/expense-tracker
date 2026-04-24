@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import useAuthStore from './store/useAuthStore';
 import useThemeStore from './store/useThemeStore';
+import usePwaStore from './store/usePwaStore';
 import MobileLayout from './layouts/MobileLayout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -45,10 +46,20 @@ function AuthRoute({ children }) {
 export default function App() {
   const fetchUser = useAuthStore((s) => s.fetchUser);
   const initTheme = useThemeStore((s) => s.initTheme);
+  const setInstallPrompt = usePwaStore((s) => s.setInstallPrompt);
 
   useEffect(() => {
     initTheme();
     fetchUser();
+
+    // Listen for the PWA install prompt
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
 
   return (
