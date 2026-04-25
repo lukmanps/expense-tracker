@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, FileUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { expenseService } from '../services/expense.service';
 import { categoryService } from '../services/category.service';
@@ -136,10 +136,15 @@ export default function AddExpensePage() {
       </div>
 
       {/* Submit */}
-      <div className="mt-auto px-5 pb-6 pt-6">
+      <div className="mt-auto px-5 pb-6 pt-6 flex flex-col gap-3">
         <Button onClick={handleSubmit} size="full" loading={loading}>
           {editId ? 'Update Expense' : 'Add Expense'}
         </Button>
+        {!editId && (
+          <Button variant="secondary" size="full" onClick={() => navigate('/upload-statement')}>
+            <FileUp className="w-5 h-5 mr-1" /> Upload Statement
+          </Button>
+        )}
       </div>
     </div>
   );

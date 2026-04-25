@@ -19,6 +19,7 @@ import CategoriesPage from './pages/CategoriesPage';
 import BillsPage from './pages/BillsPage';
 import AddBillPage from './pages/AddBillPage';
 import EditProfilePage from './pages/EditProfilePage';
+import UploadStatementPage from './pages/UploadStatementPage';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuthStore();
@@ -99,6 +100,7 @@ export default function App() {
         <Route path="/categories" element={<ProtectedRoute><CategoriesPage /></ProtectedRoute>} />
         <Route path="/add-bill" element={<ProtectedRoute><AddBillPage /></ProtectedRoute>} />
         <Route path="/edit-profile" element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} />
+        <Route path="/upload-statement" element={<ProtectedRoute><UploadStatementPage /></ProtectedRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

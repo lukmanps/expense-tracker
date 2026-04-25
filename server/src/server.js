@@ -3,6 +3,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import sensible from '@fastify/sensible';
+import multipart from '@fastify/multipart';
 
 import authPlugin from './plugins/auth.js';
 import errorHandler from './plugins/error-handler.js';
@@ -13,6 +14,7 @@ import expenseRoutes from './modules/expense/expense.routes.js';
 import categoryRoutes from './modules/category/category.routes.js';
 import transactionRoutes from './modules/transactions/transactions.routes.js';
 import statsRoutes from './modules/stats/stats.routes.js';
+import statementRoutes from './modules/statement/statement.routes.js';
 
 const fastify = Fastify({
   logger: {
@@ -33,6 +35,11 @@ await fastify.register(rateLimit, {
 });
 
 await fastify.register(sensible);
+await fastify.register(multipart, {
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
+});
 await fastify.register(authPlugin);
 await fastify.register(errorHandler);
 
@@ -45,6 +52,7 @@ await fastify.register(expenseRoutes, { prefix: '/api/expenses' });
 await fastify.register(categoryRoutes, { prefix: '/api/categories' });
 await fastify.register(transactionRoutes, { prefix: '/api/transactions' });
 await fastify.register(statsRoutes, { prefix: '/api/stats' });
+await fastify.register(statementRoutes, { prefix: '/api/statements' });
 
 // Start server
 const PORT = parseInt(process.env.PORT) || 3001;
