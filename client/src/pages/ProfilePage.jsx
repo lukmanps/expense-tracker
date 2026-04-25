@@ -43,14 +43,20 @@ export default function ProfilePage() {
   };
 
   const handleInstallPwa = async () => {
-    if (!installPrompt) return;
+    if (!installPrompt) {
+      toast.info('To install: tap the share button and "Add to Home Screen"', {
+        icon: <Download className="w-4 h-4 text-primary" />,
+        duration: 5000
+      });
+      return;
+    }
 
     installPrompt.prompt();
     const { outcome } = await installPrompt.userChoice;
 
     if (outcome === 'accepted') {
       setInstallPrompt(null);
-      toast.success('Installing SpendWise...');
+      toast.success('Starting installation...');
     }
   };
 
@@ -80,10 +86,12 @@ export default function ProfilePage() {
     },
   ];
 
-  if (installPrompt) {
+  // Show Download App button if not already in standalone mode
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  if (!isStandalone) {
     menuItems.push({
       icon: Download,
-      label: 'Install App',
+      label: 'Download App',
       action: handleInstallPwa,
       trailing: <div className="px-2 py-0.5 rounded-md bg-primary/20 text-primary text-[10px] font-bold uppercase tracking-wider">Install</div>,
     });

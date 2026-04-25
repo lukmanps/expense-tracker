@@ -9,22 +9,26 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icons.svg', 'xpense-logo.png'],
+      includeAssets: ['favicon.svg', 'icons.svg', 'xpense-logo.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
         name: 'Xpense - Expense Tracker',
         short_name: 'Xpense',
+        id: '/',
+        start_url: '/',
+        scope: '/',
         description: 'Track expenses, manage income, and gain financial insights with a beautiful mobile-first experience.',
         theme_color: '#FAFAFA',
         background_color: '#FAFAFA',
         display: 'standalone',
+        orientation: 'portrait-primary',
         icons: [
           {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
+            src: 'xpense-logo.png',
+            sizes: '512x512',
             type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'xpense-logo.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
