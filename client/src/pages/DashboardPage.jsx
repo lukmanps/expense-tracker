@@ -1,12 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowUpRight, ArrowDownLeft, Send, MoreHorizontal, Bell, ChevronRight, TrendingUp } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, ChevronRight, ChevronDown, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import useAuthStore from '../store/useAuthStore';
 import { statsService } from '../services/stats.service';
+import { expenseService } from '../services/expense.service';
+import { incomeService } from '../services/income.service';
 import Card from '../components/ui/Card';
 import AmountDisplay from '../components/ui/AmountDisplay';
 import FilterChips from '../components/ui/FilterChips';
+import SwipeableRow from '../components/ui/SwipeableRow';
 import { DashboardSkeleton } from '../components/ui/SkeletonLoader';
 import { getIcon } from '../components/ui/CategoryGrid';
 import { format } from 'date-fns';
@@ -17,6 +20,11 @@ const activityFilters = [
   { value: 'expense', label: 'Expense' },
 ];
 
+function getCurrentMonth() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
@@ -24,16 +32,30 @@ export default function DashboardPage() {
   const [recentActivity, setRecentActivity] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth);
+
+  const monthOptions = useMemo(() => {
+    const opts = [];
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const label = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      opts.push({ value, label });
+    }
+    return opts;
+  }, []);
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = async () => {
+  const loadData = async (month) => {
+    const m = month !== undefined ? month : selectedMonth;
     try {
       const [summaryData, activityData] = await Promise.all([
-        statsService.dashboard(),
-        statsService.recentActivity(15),
+        statsService.dashboard(m),
+        statsService.recentActivity(50, m),
       ]);
       setSummary(summaryData);
       setRecentActivity(activityData.data);
@@ -41,6 +63,28 @@ export default function DashboardPage() {
       toast.error('Failed to load dashboard');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleMonthChange = async (month) => {
+    setSelectedMonth(month);
+    setLoading(true);
+    await loadData(month);
+  };
+
+  const handleDelete = async (id, type) => {
+    try {
+      if (type === 'expense') {
+        await expenseService.delete(id);
+      } else if (type === 'income') {
+        await incomeService.delete(id);
+      }
+      
+      setRecentActivity((prev) => prev.filter((item) => item.id !== id));
+      loadData();
+      toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted`);
+    } catch (err) {
+      toast.error('Failed to delete transaction');
     }
   };
 
@@ -80,23 +124,31 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* <button className="relative w-11 h-11 rounded-2xl bg-surface flex items-center justify-center border border-border/10 shadow-sm active:scale-95 transition-all">
-              <Bell className="w-5 h-5 text-text-secondary" />
-              <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-danger rounded-full border-2 border-surface animate-pulse" />
-            </button> */}
+            <div className="relative">
+              <select
+                value={selectedMonth}
+                onChange={(e) => handleMonthChange(e.target.value)}
+                className="appearance-none bg-surface-alt/40 border border-border/20 text-text text-[11px] font-bold rounded-xl pl-3 pr-7 py-1.5 focus:outline-none cursor-pointer"
+              >
+                {monthOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-text-muted pointer-events-none" />
+            </div>
           </div>
 
           {/* Balance */}
           <div className="text-center pt-2 pb-5 px-5 relative z-10">
-            <p className="text-sm text-text/60 mb-0.5">Your Balance</p>
+            <p className="text-sm text-text/60 mb-0.5">{summary?.month || 'This Month'}</p>
             <div className="text-text">
-              <AmountDisplay amount={summary?.balance || 0} size="xl" />
+              <AmountDisplay amount={summary?.monthBalance || 0} size="xl" />
             </div>
-            {summary?.balance > 0 && (
+            {summary?.monthBalance > 0 && (
               <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 bg-primary/10 backdrop-blur-md rounded-full border border-white/5">
                 <TrendingUp className="w-3 h-3 text-primary" />
                 <span className="text-[10px] font-bold text-text">
-                  You saved ₹{Math.abs(summary?.balance || 0).toLocaleString()} this month
+                  You saved ₹{Math.abs(summary?.monthBalance || 0).toLocaleString()} in {summary?.month}
                 </span>
               </div>
             )}
@@ -110,7 +162,7 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-xs text-text-muted opacity-60">Expenses</p>
                   <p className="text-xl font-semibold text-text">
-                    -₹{(summary?.totalExpense || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    -₹{(summary?.monthExpense || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>
@@ -118,7 +170,7 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-xs text-text-muted opacity-60">Income</p>
                   <p className="text-xl font-semibold text-text">
-                    +₹{(summary?.totalIncome || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    +₹{(summary?.monthIncome || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
                 <ArrowDownLeft className="w-8 h-8 text-success/80" />
@@ -155,24 +207,26 @@ export default function DashboardPage() {
               {filteredActivity.map((item) => {
                 const IconComp = getIcon(item.icon);
                 return (
-                  <div key={item.id} className="flex items-center gap-3 py-2.5 group active:bg-surface-alt/15 transition-colors rounded-xl px-1 -mx-1">
-                    <div
-                      className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm"
-                      style={{ backgroundColor: `${item.color}15` }}
-                    >
-                      <IconComp className="w-4.5 h-4.5 transition-transform group-hover:scale-110" style={{ color: item.color }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-text truncate tracking-tight opacity-90">{item.title}</p>
-                      <p className="text-[10px] font-medium text-text-muted opacity-50 mt-0.5">
-                        {format(new Date(item.date), 'MMM d')} · {format(new Date(item.date), 'h:mm a')}
+                  <SwipeableRow key={item.id} onDelete={() => handleDelete(item.id, item.type)}>
+                    <div className="flex items-center gap-3 py-2.5 group active:bg-surface-alt/15 transition-colors rounded-xl px-1 -mx-1">
+                      <div
+                        className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm"
+                        style={{ backgroundColor: `${item.color}15` }}
+                      >
+                        <IconComp className="w-4.5 h-4.5 transition-transform group-hover:scale-110" style={{ color: item.color }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-text truncate tracking-tight opacity-90">{item.title}</p>
+                        <p className="text-[10px] font-medium text-text-muted opacity-50 mt-0.5">
+                          {format(new Date(item.date), 'MMM d')} · {format(new Date(item.date), 'h:mm a')}
+                        </p>
+                      </div>
+                      <p className={`text-[14px] font-medium flex-shrink-0 tabular-nums ${item.amount >= 0 ? 'text-success' : 'text-text'
+                        }`}>
+                        {item.amount >= 0 ? '+' : '-'}₹{Math.abs(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </p>
                     </div>
-                    <p className={`text-[14px] font-medium flex-shrink-0 tabular-nums ${item.amount >= 0 ? 'text-success' : 'text-text'
-                      }`}>
-                      {item.amount >= 0 ? '+' : '-'}₹{Math.abs(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </p>
-                  </div>
+                  </SwipeableRow>
                 );
               })}
             </div>

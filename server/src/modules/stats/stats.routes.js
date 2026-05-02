@@ -6,6 +6,8 @@ export default async function statsRoutes(fastify) {
   fastify.get('/dashboard', statsController.dashboard);
   fastify.get('/weekly', statsController.weekly);
   fastify.get('/monthly', statsController.monthly);
+  fastify.get('/monthly-weekly', statsController.monthlyWeekly);
+  fastify.get('/last-month-weekly', statsController.lastMonthWeekly);
   fastify.get('/categories', statsController.categoryBreakdown);
   fastify.get('/recent', statsController.recentActivity);
   fastify.get('/top-expenses', statsController.topExpenses);

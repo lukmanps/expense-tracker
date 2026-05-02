@@ -1,7 +1,8 @@
 import * as statsService from './stats.service.js';
 
 export async function dashboard(request, reply) {
-  const summary = await statsService.getDashboardSummary(request.user.id);
+  const { month } = request.query;
+  const summary = await statsService.getDashboardSummary(request.user.id, month);
   return reply.send(summary);
 }
 
@@ -11,18 +12,31 @@ export async function weekly(request, reply) {
 }
 
 export async function monthly(request, reply) {
-  const data = await statsService.getMonthlySummary(request.user.id);
+  const months = parseInt(request.query.months) || 6;
+  const data = await statsService.getMonthlySummary(request.user.id, months);
+  return reply.send({ data });
+}
+
+export async function monthlyWeekly(request, reply) {
+  const data = await statsService.getCurrentMonthWeekly(request.user.id);
+  return reply.send({ data });
+}
+
+export async function lastMonthWeekly(request, reply) {
+  const data = await statsService.getLastMonthWeekly(request.user.id);
   return reply.send({ data });
 }
 
 export async function categoryBreakdown(request, reply) {
-  const data = await statsService.getCategoryBreakdown(request.user.id);
+  const { period } = request.query;
+  const data = await statsService.getCategoryBreakdown(request.user.id, period);
   return reply.send({ data });
 }
 
 export async function recentActivity(request, reply) {
   const limit = parseInt(request.query.limit) || 10;
-  const data = await statsService.getRecentActivity(request.user.id, limit);
+  const { month } = request.query;
+  const data = await statsService.getRecentActivity(request.user.id, limit, month);
   return reply.send({ data });
 }
 
@@ -35,6 +49,7 @@ export async function exportData(request, reply) {
 
 export async function topExpenses(request, reply) {
   const limit = parseInt(request.query.limit) || 5;
-  const data = await statsService.getTopExpenses(request.user.id, limit);
+  const { period } = request.query;
+  const data = await statsService.getTopExpenses(request.user.id, limit, period);
   return reply.send({ data });
 }

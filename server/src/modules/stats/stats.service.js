@@ -1,11 +1,28 @@
 import prisma from '../../db/prisma.js';
 
-export async function getDashboardSummary(userId) {
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+export async function getDashboardSummary(userId, month) {
+  let startOfMonth, endOfMonth, monthLabel;
+  if (month) {
+    const [y, m] = month.split('-').map(Number);
+    startOfMonth = new Date(y, m - 1, 1);
+    endOfMonth = new Date(y, m, 0, 23, 59, 59);
+    monthLabel = startOfMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
+  } else {
+    const now = new Date();
+    startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    monthLabel = now.toLocaleString('default', { month: 'long', year: 'numeric' });
+  }
 
-  const [totalIncome, totalExpense, pendingToReceive, pendingToPay] = await Promise.all([
+  const [allIncome, allExpense, monthIncome, monthExpense, pendingToReceive, pendingToPay] = await Promise.all([
+    prisma.income.aggregate({
+      where: { userId },
+      _sum: { amount: true },
+    }),
+    prisma.expense.aggregate({
+      where: { userId },
+      _sum: { amount: true },
+    }),
     prisma.income.aggregate({
       where: { userId, date: { gte: startOfMonth, lte: endOfMonth } },
       _sum: { amount: true },
@@ -24,16 +41,21 @@ export async function getDashboardSummary(userId) {
     }),
   ]);
 
-  const income = totalIncome._sum.amount || 0;
-  const expense = totalExpense._sum.amount || 0;
+  const totalAllIncome = allIncome._sum.amount || 0;
+  const totalAllExpense = allExpense._sum.amount || 0;
+  const mIncome = monthIncome._sum.amount || 0;
+  const mExpense = monthExpense._sum.amount || 0;
 
   return {
-    totalIncome: income,
-    totalExpense: expense,
-    balance: income - expense,
+    totalIncome: totalAllIncome,
+    totalExpense: totalAllExpense,
+    balance: totalAllIncome - totalAllExpense,
+    monthIncome: mIncome,
+    monthExpense: mExpense,
+    monthBalance: mIncome - mExpense,
     pendingToReceive: pendingToReceive._sum.amount || 0,
     pendingToPay: pendingToPay._sum.amount || 0,
-    month: now.toLocaleString('default', { month: 'long', year: 'numeric' }),
+    month: monthLabel,
   };
 }
 
@@ -62,44 +84,101 @@ export async function getWeeklySpending(userId) {
   return days;
 }
 
-export async function getMonthlySummary(userId) {
+export async function getMonthlySummary(userId, numMonths = 6) {
   const now = new Date();
-  const months = [];
+  const count = Math.min(Math.max(parseInt(numMonths) || 6, 1), 12);
+  const queries = [];
 
-  for (let i = 5; i >= 0; i--) {
+  for (let i = count - 1; i >= 0; i--) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59);
-
-    const [income, expense] = await Promise.all([
-      prisma.income.aggregate({
-        where: { userId, date: { gte: date, lte: endDate } },
-        _sum: { amount: true },
-      }),
-      prisma.expense.aggregate({
-        where: { userId, date: { gte: date, lte: endDate } },
-        _sum: { amount: true },
-      }),
-    ]);
-
-    months.push({
-      month: date.toLocaleDateString('en', { month: 'short' }),
-      year: date.getFullYear(),
-      income: income._sum.amount || 0,
-      expense: expense._sum.amount || 0,
-    });
+    queries.push(
+      Promise.all([
+        prisma.income.aggregate({ where: { userId, date: { gte: date, lte: endDate } }, _sum: { amount: true } }),
+        prisma.expense.aggregate({ where: { userId, date: { gte: date, lte: endDate } }, _sum: { amount: true } }),
+      ]).then(([income, expense]) => ({
+        month: date.toLocaleDateString('en', { month: 'short' }),
+        year: date.getFullYear(),
+        income: income._sum.amount || 0,
+        expense: expense._sum.amount || 0,
+      }))
+    );
   }
 
-  return months;
+  return Promise.all(queries);
 }
 
-export async function getCategoryBreakdown(userId) {
+export async function getCurrentMonthWeekly(userId) {
   const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const weeks = [
+    { label: 'Week 1', start: 1, end: 7 },
+    { label: 'Week 2', start: 8, end: 14 },
+    { label: 'Week 3', start: 15, end: 21 },
+    { label: 'Week 4', start: 22, end: daysInMonth },
+  ];
+
+  return Promise.all(
+    weeks.map(({ label, start, end }) => {
+      const startDate = new Date(year, month, start);
+      const endDate = new Date(year, month, end, 23, 59, 59);
+      return Promise.all([
+        prisma.income.aggregate({ where: { userId, date: { gte: startDate, lte: endDate } }, _sum: { amount: true } }),
+        prisma.expense.aggregate({ where: { userId, date: { gte: startDate, lte: endDate } }, _sum: { amount: true } }),
+      ]).then(([income, expense]) => ({
+        month: label,
+        income: income._sum.amount || 0,
+        expense: expense._sum.amount || 0,
+      }));
+    })
+  );
+}
+
+export async function getLastMonthWeekly(userId) {
+  const now = new Date();
+  const year = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+  const month = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const weeks = [
+    { label: 'Week 1', start: 1, end: 7 },
+    { label: 'Week 2', start: 8, end: 14 },
+    { label: 'Week 3', start: 15, end: 21 },
+    { label: 'Week 4', start: 22, end: daysInMonth },
+  ];
+
+  return Promise.all(
+    weeks.map(({ label, start, end }) => {
+      const startDate = new Date(year, month, start);
+      const endDate = new Date(year, month, end, 23, 59, 59);
+      return Promise.all([
+        prisma.income.aggregate({ where: { userId, date: { gte: startDate, lte: endDate } }, _sum: { amount: true } }),
+        prisma.expense.aggregate({ where: { userId, date: { gte: startDate, lte: endDate } }, _sum: { amount: true } }),
+      ]).then(([income, expense]) => ({
+        month: label,
+        income: income._sum.amount || 0,
+        expense: expense._sum.amount || 0,
+      }));
+    })
+  );
+}
+
+export async function getCategoryBreakdown(userId, period) {
+  let dateFilter = {};
+  if (period === 'month') {
+    const now = new Date();
+    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth(), 1) } };
+  } else if (period === '3months') {
+    const now = new Date();
+    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth() - 3, 1) } };
+  }
 
   const expenses = await prisma.expense.groupBy({
     by: ['categoryId'],
-    where: { userId, date: { gte: startOfMonth, lte: endOfMonth } },
+    where: { userId, ...dateFilter },
     _sum: { amount: true },
   });
 
@@ -120,16 +199,22 @@ export async function getCategoryBreakdown(userId) {
     .sort((a, b) => b.amount - a.amount);
 }
 
-export async function getRecentActivity(userId, limit = 10) {
+export async function getRecentActivity(userId, limit = 10, month) {
+  let dateFilter = {};
+  if (month) {
+    const [y, m] = month.split('-').map(Number);
+    dateFilter = { date: { gte: new Date(y, m - 1, 1), lte: new Date(y, m, 0, 23, 59, 59) } };
+  }
+
   const [recentExpenses, recentIncomes] = await Promise.all([
     prisma.expense.findMany({
-      where: { userId },
+      where: { userId, ...dateFilter },
       include: { category: true },
       orderBy: { date: 'desc' },
       take: limit,
     }),
     prisma.income.findMany({
-      where: { userId },
+      where: { userId, ...dateFilter },
       orderBy: { date: 'desc' },
       take: limit,
     }),
@@ -186,16 +271,25 @@ export async function exportCSV(userId) {
   return csv;
 }
 
-export async function getTopExpenses(userId, limit = 5) {
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+export async function getTopExpenses(userId, limit = 5, period) {
+  let dateFilter = {};
+  if (period === 'week') {
+    const now = new Date();
+    const weekAgo = new Date(now);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    dateFilter = { date: { gte: weekAgo } };
+  } else if (period === 'month') {
+    const now = new Date();
+    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth(), 1) } };
+  } else if (period === 'last_month') {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+    dateFilter = { date: { gte: start, lte: end } };
+  }
 
   const expenses = await prisma.expense.findMany({
-    where: {
-      userId,
-      date: { gte: startOfMonth, lte: endOfMonth },
-    },
+    where: { userId, ...dateFilter },
     include: { category: true },
     orderBy: { amount: 'desc' },
     take: limit,

@@ -30,6 +30,9 @@ export default function ExpensesPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const debouncedSearch = useDebounce(search);
 
   useEffect(() => {
@@ -37,21 +40,31 @@ export default function ExpensesPage() {
   }, []);
 
   useEffect(() => {
-    loadExpenses();
+    loadExpenses(1, false);
   }, [selectedCategory, debouncedSearch]);
 
-  const loadExpenses = async () => {
+  const loadExpenses = async (pageNumber = 1, append = false) => {
     try {
-      setLoading(true);
-      const params = {};
+      if (append) setLoadingMore(true);
+      else setLoading(true);
+
+      const params = { limit: 20, page: pageNumber };
       if (selectedCategory !== 'all') params.categoryId = selectedCategory;
       if (debouncedSearch) params.search = debouncedSearch;
       const result = await expenseService.list(params);
-      setExpenses(result.items);
+
+      if (append) {
+        setExpenses((prev) => [...prev, ...result.items]);
+      } else {
+        setExpenses(result.items);
+      }
+      setHasMore(result.page < result.totalPages);
+      setPage(result.page);
     } catch (err) {
       toast.error('Failed to load expenses');
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -185,6 +198,18 @@ export default function ExpensesPage() {
               </div>
             </div>
           ))
+        )}
+        
+        {hasMore && !loading && (
+          <div className="pt-2 pb-6 flex justify-center">
+            <button
+              onClick={() => loadExpenses(page + 1, true)}
+              disabled={loadingMore}
+              className="px-5 py-2 bg-surface-alt hover:bg-surface border border-border/10 text-text-secondary text-xs font-bold rounded-full transition-colors active:scale-95 flex items-center gap-2"
+            >
+              {loadingMore ? 'Loading...' : 'Load More'}
+            </button>
+          </div>
         )}
       </div>
     </div>
