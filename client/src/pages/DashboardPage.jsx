@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowUpRight, ArrowDownLeft, ChevronRight, ChevronDown, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import useAuthStore from '../store/useAuthStore';
@@ -32,7 +32,8 @@ export default function DashboardPage() {
   const [recentActivity, setRecentActivity] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
-  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedMonth = searchParams.get('month') || getCurrentMonth();
 
   const monthOptions = useMemo(() => {
     const opts = [];
@@ -47,8 +48,9 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    setLoading(true);
+    loadData(selectedMonth);
+  }, [selectedMonth]);
 
   const loadData = async (month) => {
     const m = month !== undefined ? month : selectedMonth;
@@ -66,10 +68,11 @@ export default function DashboardPage() {
     }
   };
 
-  const handleMonthChange = async (month) => {
-    setSelectedMonth(month);
-    setLoading(true);
-    await loadData(month);
+  const handleMonthChange = (month) => {
+    setSearchParams(prev => {
+      prev.set('month', month);
+      return prev;
+    }, { replace: true });
   };
 
   const handleDelete = async (id, type) => {

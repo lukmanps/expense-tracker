@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ArrowUpRight, Download, ChevronDown } from 'lucide-react';
@@ -42,8 +43,9 @@ function getCurrentMonth() {
 }
 
 export default function StatsPage() {
-  const [tab, setTab] = useState('overview');
-  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get('tab') || 'overview';
+  const selectedMonth = searchParams.get('month') || getCurrentMonth();
 
   const monthOptions = useMemo(() => {
     const opts = [
@@ -70,8 +72,9 @@ export default function StatsPage() {
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
-    loadAll();
-  }, []);
+    setLoading(true);
+    loadAll(selectedMonth);
+  }, [selectedMonth]);
 
   const loadAll = async (monthStr = selectedMonth) => {
     try {
@@ -92,10 +95,18 @@ export default function StatsPage() {
     }
   };
 
-  const handleGlobalMonthChange = async (month) => {
-    setSelectedMonth(month);
-    setLoading(true);
-    await loadAll(month);
+  const handleGlobalMonthChange = (month) => {
+    setSearchParams(prev => {
+      prev.set('month', month);
+      return prev;
+    }, { replace: true });
+  };
+
+  const handleTabChange = (newTab) => {
+    setSearchParams(prev => {
+      prev.set('tab', newTab);
+      return prev;
+    }, { replace: true });
   };
 
   const handleExport = async () => {
@@ -168,7 +179,7 @@ export default function StatsPage() {
             </div>
           </div>
 
-          <FilterChips options={tabs} selected={tab} onSelect={setTab} />
+          <FilterChips options={tabs} selected={tab} onSelect={handleTabChange} />
         </div>
       </div>
 
