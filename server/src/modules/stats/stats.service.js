@@ -2,7 +2,21 @@ import prisma from '../../db/prisma.js';
 
 export async function getDashboardSummary(userId, month) {
   let startOfMonth, endOfMonth, monthLabel;
-  if (month) {
+  if (month === '3months') {
+    const now = new Date();
+    startOfMonth = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+    endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    monthLabel = 'Last 3 Months';
+  } else if (month === '6months') {
+    const now = new Date();
+    startOfMonth = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+    endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    monthLabel = 'Last 6 Months';
+  } else if (month === 'all') {
+    startOfMonth = new Date(2000, 0, 1);
+    endOfMonth = new Date(2100, 0, 1);
+    monthLabel = 'All Time';
+  } else if (month) {
     const [y, m] = month.split('-').map(Number);
     startOfMonth = new Date(y, m - 1, 1);
     endOfMonth = new Date(y, m, 0, 23, 59, 59);
@@ -84,6 +98,31 @@ export async function getWeeklySpending(userId) {
   return days;
 }
 
+export async function getLastWeeklySpending(userId) {
+  const now = new Date();
+  const days = [];
+
+  for (let i = 13; i >= 7; i--) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - i);
+    const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const dayEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59);
+
+    const result = await prisma.expense.aggregate({
+      where: { userId, date: { gte: dayStart, lte: dayEnd } },
+      _sum: { amount: true },
+    });
+
+    days.push({
+      date: dayStart.toISOString().split('T')[0],
+      day: dayStart.toLocaleDateString('en', { weekday: 'short' }),
+      amount: result._sum.amount || 0,
+    });
+  }
+
+  return days;
+}
+
 export async function getMonthlySummary(userId, numMonths = 6) {
   const now = new Date();
   const count = Math.min(Math.max(parseInt(numMonths) || 6, 1), 12);
@@ -108,10 +147,20 @@ export async function getMonthlySummary(userId, numMonths = 6) {
   return Promise.all(queries);
 }
 
-export async function getCurrentMonthWeekly(userId) {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
+export async function getMonthWeekly(userId, monthStr) {
+  if (monthStr === '3months') return getMonthlySummary(userId, 3);
+  if (monthStr === '6months') return getMonthlySummary(userId, 6);
+  if (monthStr === 'all') return getMonthlySummary(userId, 12);
+
+  let year, month;
+  if (monthStr) {
+    [year, month] = monthStr.split('-').map(Number);
+    month -= 1; // JS months are 0-indexed
+  } else {
+    const now = new Date();
+    year = now.getFullYear();
+    month = now.getMonth();
+  }
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const weeks = [
@@ -166,14 +215,22 @@ export async function getLastMonthWeekly(userId) {
   );
 }
 
-export async function getCategoryBreakdown(userId, period) {
+export async function getCategoryBreakdown(userId, monthStr) {
   let dateFilter = {};
-  if (period === 'month') {
-    const now = new Date();
-    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth(), 1) } };
-  } else if (period === '3months') {
+  if (monthStr === '3months') {
     const now = new Date();
     dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth() - 3, 1) } };
+  } else if (monthStr === '6months') {
+    const now = new Date();
+    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth() - 6, 1) } };
+  } else if (monthStr === 'all') {
+    dateFilter = {};
+  } else if (monthStr) {
+    const [y, m] = monthStr.split('-').map(Number);
+    dateFilter = { date: { gte: new Date(y, m - 1, 1), lte: new Date(y, m, 0, 23, 59, 59) } };
+  } else {
+    const now = new Date();
+    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth(), 1), lte: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59) } };
   }
 
   const expenses = await prisma.expense.groupBy({
@@ -271,21 +328,22 @@ export async function exportCSV(userId) {
   return csv;
 }
 
-export async function getTopExpenses(userId, limit = 5, period) {
+export async function getTopExpenses(userId, limit = 5, monthStr) {
   let dateFilter = {};
-  if (period === 'week') {
+  if (monthStr === '3months') {
     const now = new Date();
-    const weekAgo = new Date(now);
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    dateFilter = { date: { gte: weekAgo } };
-  } else if (period === 'month') {
+    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth() - 3, 1) } };
+  } else if (monthStr === '6months') {
     const now = new Date();
-    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth(), 1) } };
-  } else if (period === 'last_month') {
+    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth() - 6, 1) } };
+  } else if (monthStr === 'all') {
+    dateFilter = {};
+  } else if (monthStr) {
+    const [y, m] = monthStr.split('-').map(Number);
+    dateFilter = { date: { gte: new Date(y, m - 1, 1), lte: new Date(y, m, 0, 23, 59, 59) } };
+  } else {
     const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-    dateFilter = { date: { gte: start, lte: end } };
+    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth(), 1), lte: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59) } };
   }
 
   const expenses = await prisma.expense.findMany({

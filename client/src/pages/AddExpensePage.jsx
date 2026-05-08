@@ -136,7 +136,7 @@ export default function AddExpensePage() {
       </div>
 
       {/* Submit */}
-      <div className="mt-auto px-5 pb-4 pt-2">
+      <div className="mt-auto px-5 pb-22 pt-2">
         <Button onClick={handleSubmit} size="full" loading={loading}>
           {editId ? 'Update Expense' : 'Add Expense'}
         </Button>

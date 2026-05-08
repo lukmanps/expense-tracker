@@ -1,7 +1,7 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { toast } from 'sonner';
-import { BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ArrowUpRight, Download } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { ArrowUpRight, Download, ChevronDown } from 'lucide-react';
 import { statsService } from '../services/stats.service';
 import Card from '../components/ui/Card';
 import FilterChips from '../components/ui/FilterChips';
@@ -9,22 +9,8 @@ import { DashboardSkeleton } from '../components/ui/SkeletonLoader';
 import { getIcon } from '../components/ui/CategoryGrid';
 
 const tabs = [
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'monthly', label: 'Monthly' },
+  { value: 'overview', label: 'Overview' },
   { value: 'categories', label: 'Categories' },
-];
-
-const monthlyPeriodOptions = [
-  { value: 'this_month', label: 'This Month' },
-  { value: 'last_month', label: 'Last Month' },
-  { value: '3months', label: 'Last 3M' },
-  { value: '6months', label: 'Last 6M' },
-];
-
-const categoryPeriodOptions = [
-  { value: 'month', label: 'This Month' },
-  { value: '3months', label: 'Last 3 Months' },
-  { value: 'all', label: 'All Time' },
 ];
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -50,41 +36,52 @@ const CustomTooltip = ({ active, payload, label }) => {
 const formatYAxis = (v) =>
   v >= 1000 ? `₹${(v / 1000).toFixed(v % 1000 !== 0 ? 1 : 0)}k` : `₹${v}`;
 
-export default function StatsPage() {
-  const [tab, setTab] = useState('weekly');
-  const [monthlyPeriod, setMonthlyPeriod] = useState('this_month');
-  const [categoryPeriod, setCategoryPeriod] = useState('all');
+function getCurrentMonth() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
 
-  const [weekly, setWeekly] = useState([]);
-  const [monthlyData, setMonthlyData] = useState([]);      // month-level (3m / 6m)
-  const [monthlyWeekly, setMonthlyWeekly] = useState([]);  // week-level (this month)
+export default function StatsPage() {
+  const [tab, setTab] = useState('overview');
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth);
+
+  const monthOptions = useMemo(() => {
+    const opts = [
+      { value: '3months', label: 'Last 3 Months' },
+      { value: '6months', label: 'Last 6 Months' },
+      { value: 'all', label: 'All Time' },
+    ];
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const label = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      opts.push({ value, label });
+    }
+    return opts;
+  }, []);
+
+  const [monthlyWeekly, setMonthlyWeekly] = useState([]);
   const [categories, setCategories] = useState([]);
   const [summary, setSummary] = useState(null);
   const [topExpenses, setTopExpenses] = useState([]);
 
   const [loading, setLoading] = useState(true);
-  const [chartLoading, setChartLoading] = useState(false);
-  const [topExpensesLoading, setTopExpensesLoading] = useState(false);
-  const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     loadAll();
   }, []);
 
-  const loadAll = async () => {
+  const loadAll = async (monthStr = selectedMonth) => {
     try {
-      const [w, mw, m3, c, s, te] = await Promise.all([
-        statsService.weekly(),
-        statsService.monthlyWeekly(),
-        statsService.monthly(6),
-        statsService.categoryBreakdown(),          // all-time by default
-        statsService.dashboard(),
-        statsService.topExpenses(5, 'week'),        // matches default weekly tab
+      const [mw, c, s, te] = await Promise.all([
+        statsService.monthlyWeekly(monthStr),
+        statsService.categoryBreakdown(monthStr),
+        statsService.dashboard(monthStr),
+        statsService.topExpenses(5, monthStr),
       ]);
-      setWeekly(w.data);
       setMonthlyWeekly(mw.data);
-      setMonthlyData(m3.data);
       setCategories(c.data);
       setSummary(s);
       setTopExpenses(te.data);
@@ -95,62 +92,11 @@ export default function StatsPage() {
     }
   };
 
-  const handleTabChange = useCallback(async (newTab) => {
-    setTab(newTab);
-    if (newTab === 'weekly' || newTab === 'monthly') {
-      const period = newTab === 'weekly' ? 'week' : (monthlyPeriod === 'this_month' ? 'month' : undefined);
-      setTopExpensesLoading(true);
-      try {
-        const te = await statsService.topExpenses(5, period);
-        setTopExpenses(te.data);
-      } catch {
-        toast.error('Failed to load top expenses');
-      } finally {
-        setTopExpensesLoading(false);
-      }
-    }
-  }, [monthlyPeriod]);
-
-  const handleMonthlyPeriodChange = useCallback(async (period) => {
-    setMonthlyPeriod(period);
-    setChartLoading(true);
-    setTopExpensesLoading(true);
-    try {
-      const topPeriod = period === 'this_month' ? 'month' : period === 'last_month' ? 'last_month' : undefined;
-      const [chartRes, teRes] = await Promise.all([
-        period === 'this_month'
-          ? statsService.monthlyWeekly()
-          : period === 'last_month'
-          ? statsService.lastMonthWeekly()
-          : statsService.monthly(period === '3months' ? 3 : 6),
-        statsService.topExpenses(5, topPeriod),
-      ]);
-      if (period === 'this_month' || period === 'last_month') {
-        setMonthlyWeekly(chartRes.data);
-      } else {
-        setMonthlyData(chartRes.data);
-      }
-      setTopExpenses(teRes.data);
-    } catch {
-      toast.error('Failed to load data');
-    } finally {
-      setChartLoading(false);
-      setTopExpensesLoading(false);
-    }
-  }, []);
-
-  const handleCategoryPeriodChange = useCallback(async (period) => {
-    setCategoryPeriod(period);
-    setCategoriesLoading(true);
-    try {
-      const c = await statsService.categoryBreakdown(period === 'all' ? undefined : period);
-      setCategories(c.data);
-    } catch {
-      toast.error('Failed to load categories');
-    } finally {
-      setCategoriesLoading(false);
-    }
-  }, []);
+  const handleGlobalMonthChange = async (month) => {
+    setSelectedMonth(month);
+    setLoading(true);
+    await loadAll(month);
+  };
 
   const handleExport = async () => {
     setExporting(true);
@@ -168,27 +114,9 @@ export default function StatsPage() {
 
   const totalCategoryAmount = categories.reduce((s, c) => s + c.amount, 0);
 
-  // Determine what data / label the monthly chart uses
-  const monthlyChartData = (monthlyPeriod === 'this_month' || monthlyPeriod === 'last_month') ? monthlyWeekly : monthlyData;
-  const monthlyChartTitle =
-    monthlyPeriod === 'this_month'
-      ? `${summary?.month || 'This Month'} — by Week`
-      : monthlyPeriod === 'last_month'
-      ? 'Last Month — by Week'
-      : monthlyPeriod === '3months'
-      ? 'Last 3 Months'
-      : 'Last 6 Months';
-
-  const topExpensesLabel =
-    tab === 'weekly'
-      ? 'this week'
-      : monthlyPeriod === 'this_month'
-      ? 'this month'
-      : monthlyPeriod === 'last_month'
-      ? 'last month'
-      : monthlyPeriod === '3months'
-      ? 'last 3 months'
-      : 'last 6 months';
+  const isRolling = selectedMonth === '3months' || selectedMonth === '6months' || selectedMonth === 'all';
+  const monthlyChartTitle = isRolling ? `${summary?.month || ''} — by Month` : `${summary?.month || 'This Month'} — by Week`;
+  const topExpensesLabel = summary?.month || 'this period';
 
   return (
     <div className="h-full flex flex-col overflow-hidden animate-fade-in bg-bg">
@@ -204,14 +132,28 @@ export default function StatsPage() {
             <h1 className="text-[32px] font-black text-text tracking-tight">
               Statistics<span className="text-primary">.</span>
             </h1>
-            <button
-              onClick={handleExport}
-              disabled={exporting}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-alt/30 border border-border/20 text-text-muted hover:text-text hover:bg-surface-alt/50 transition-all text-[11px] font-bold disabled:opacity-50"
-            >
-              <Download className="w-3.5 h-3.5" />
-              {exporting ? 'Exporting…' : 'Export CSV'}
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <select
+                  value={selectedMonth}
+                  onChange={(e) => handleGlobalMonthChange(e.target.value)}
+                  className="appearance-none bg-surface-alt/40 border border-border/20 text-text text-[11px] font-bold rounded-xl pl-3 pr-7 py-1.5 focus:outline-none cursor-pointer"
+                >
+                  {monthOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-text-muted pointer-events-none" />
+              </div>
+              <button
+                onClick={handleExport}
+                disabled={exporting}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-alt/30 border border-border/20 text-text-muted hover:text-text hover:bg-surface-alt/50 transition-all text-[11px] font-bold disabled:opacity-50"
+              >
+                <Download className="w-3.5 h-3.5" />
+                {exporting ? 'Exporting…' : 'Export CSV'}
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center gap-3 mb-6 px-1">
@@ -226,43 +168,13 @@ export default function StatsPage() {
             </div>
           </div>
 
-          <FilterChips options={tabs} selected={tab} onSelect={handleTabChange} />
+          <FilterChips options={tabs} selected={tab} onSelect={setTab} />
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 pb-32">
-        {/* ── Weekly Tab ── */}
-        {tab === 'weekly' && (
-          <div className="space-y-3">
-            <Card className="p-4 rounded-lg!">
-              <div className="mb-4">
-                <span className="text-sm font-semibold text-text">Weekly Activity</span>
-              </div>
-              <div className="h-[200px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={weekly} barSize={36} margin={{ left: 0, right: 0, top: 10, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={1} />
-                        <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0.6} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} opacity={0.1} />
-                    <XAxis dataKey="day" tick={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 800 }} axisLine={false} tickLine={false} dy={15} />
-                    <YAxis tickFormatter={formatYAxis} tick={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 800 }} axisLine={false} tickLine={false} width={40} />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--color-surface-alt)', opacity: 0.2 }} />
-                    <Bar dataKey="amount" fill="url(#barGradient)" radius={[12, 12, 12, 12]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </Card>
-
-            <TopExpensesCard items={topExpenses} loading={topExpensesLoading} label={topExpensesLabel} />
-          </div>
-        )}
-
-        {/* ── Monthly Tab ── */}
-        {tab === 'monthly' && (
+        {/* ── Overview Tab ── */}
+        {tab === 'overview' && (
           <div className="space-y-3">
             <Card className="p-4 rounded-lg!">
               <div className="mb-3 flex items-center justify-between">
@@ -277,43 +189,31 @@ export default function StatsPage() {
                 </div>
               </div>
 
-              <FilterChips
-                options={monthlyPeriodOptions}
-                selected={monthlyPeriod}
-                onSelect={handleMonthlyPeriodChange}
-              />
-
               <div className="h-[200px] w-full mt-4">
-                {chartLoading ? (
-                  <div className="h-full flex items-center justify-center text-text-muted text-sm opacity-50">
-                    Loading…
-                  </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={monthlyChartData} margin={{ left: 0, right: 0, top: 10, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#22C55E" stopOpacity={0.2} />
-                          <stop offset="95%" stopColor="#22C55E" stopOpacity={0} />
-                        </linearGradient>
-                        <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#EF4444" stopOpacity={0.2} />
-                          <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} opacity={0.1} />
-                      <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 800 }} axisLine={false} tickLine={false} dy={15} />
-                      <YAxis tickFormatter={formatYAxis} tick={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 800 }} axisLine={false} tickLine={false} width={40} />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Area type="monotone" dataKey="income" stroke="#22C55E" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
-                      <Area type="monotone" dataKey="expense" stroke="#EF4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExpense)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                )}
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={monthlyWeekly} margin={{ left: 0, right: 0, top: 10, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#22C55E" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#22C55E" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#EF4444" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} opacity={0.1} />
+                    <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 800 }} axisLine={false} tickLine={false} dy={15} />
+                    <YAxis tickFormatter={formatYAxis} tick={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 800 }} axisLine={false} tickLine={false} width={40} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area type="monotone" dataKey="income" stroke="#22C55E" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
+                    <Area type="monotone" dataKey="expense" stroke="#EF4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExpense)" />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             </Card>
 
-            <TopExpensesCard items={topExpenses} loading={topExpensesLoading} label={topExpensesLabel} />
+            <TopExpensesCard items={topExpenses} label={topExpensesLabel} />
           </div>
         )}
 
@@ -325,16 +225,8 @@ export default function StatsPage() {
                 <span className="text-sm font-semibold text-text">Distribution Breakdown</span>
               </div>
 
-              <FilterChips
-                options={categoryPeriodOptions}
-                selected={categoryPeriod}
-                onSelect={handleCategoryPeriodChange}
-              />
-
               <div className="mt-4">
-                {categoriesLoading ? (
-                  <p className="text-center text-text-muted text-sm py-12 italic opacity-50">Loading…</p>
-                ) : categories.length === 0 ? (
+                {categories.length === 0 ? (
                   <p className="text-center text-text-muted text-sm py-12 italic opacity-50">No data available</p>
                 ) : (
                   <div className="space-y-4">
@@ -388,7 +280,7 @@ export default function StatsPage() {
   );
 }
 
-function TopExpensesCard({ items, loading, label }) {
+function TopExpensesCard({ items, label }) {
   return (
     <Card className="p-4 rounded-xl!">
       <div className="mb-4">
@@ -398,9 +290,7 @@ function TopExpensesCard({ items, loading, label }) {
         </span>
       </div>
       <div className="space-y-1">
-        {loading ? (
-          <p className="text-center text-text-muted text-sm py-8 italic opacity-50">Loading…</p>
-        ) : items.length === 0 ? (
+        {items.length === 0 ? (
           <p className="text-center text-text-muted text-sm py-8 italic opacity-50">No data available</p>
         ) : (
           items.map((item, idx) => {

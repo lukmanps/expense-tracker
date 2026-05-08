@@ -11,6 +11,11 @@ export async function weekly(request, reply) {
   return reply.send({ data });
 }
 
+export async function lastWeekly(request, reply) {
+  const data = await statsService.getLastWeeklySpending(request.user.id);
+  return reply.send({ data });
+}
+
 export async function monthly(request, reply) {
   const months = parseInt(request.query.months) || 6;
   const data = await statsService.getMonthlySummary(request.user.id, months);
@@ -18,7 +23,8 @@ export async function monthly(request, reply) {
 }
 
 export async function monthlyWeekly(request, reply) {
-  const data = await statsService.getCurrentMonthWeekly(request.user.id);
+  const { month } = request.query;
+  const data = await statsService.getMonthWeekly(request.user.id, month);
   return reply.send({ data });
 }
 
@@ -28,8 +34,8 @@ export async function lastMonthWeekly(request, reply) {
 }
 
 export async function categoryBreakdown(request, reply) {
-  const { period } = request.query;
-  const data = await statsService.getCategoryBreakdown(request.user.id, period);
+  const { month } = request.query;
+  const data = await statsService.getCategoryBreakdown(request.user.id, month);
   return reply.send({ data });
 }
 
@@ -49,7 +55,7 @@ export async function exportData(request, reply) {
 
 export async function topExpenses(request, reply) {
   const limit = parseInt(request.query.limit) || 5;
-  const { period } = request.query;
-  const data = await statsService.getTopExpenses(request.user.id, limit, period);
+  const { month } = request.query;
+  const data = await statsService.getTopExpenses(request.user.id, limit, month);
   return reply.send({ data });
 }
