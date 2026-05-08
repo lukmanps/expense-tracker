@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, Search, ArrowLeft } from 'lucide-react';
+import { useEffect, useState, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Plus, Search, ArrowLeft, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { expenseService } from '../services/expense.service';
 import { categoryService } from '../services/category.service';
@@ -23,6 +23,11 @@ function isYesterday(date) {
   return date.getFullYear() === yesterday.getFullYear() && date.getMonth() === yesterday.getMonth() && date.getDate() === yesterday.getDate();
 }
 
+function getCurrentMonth() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
 export default function ExpensesPage() {
   const navigate = useNavigate();
   const [expenses, setExpenses] = useState([]);
@@ -34,6 +39,25 @@ export default function ExpensesPage() {
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const debouncedSearch = useDebounce(search);
+  
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedMonth = searchParams.get('month') || getCurrentMonth();
+
+  const monthOptions = useMemo(() => {
+    const opts = [
+      { value: '3months', label: 'Last 3 Months' },
+      { value: '6months', label: 'Last 6 Months' },
+      { value: 'all', label: 'All Time' },
+    ];
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const label = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      opts.push({ value, label });
+    }
+    return opts;
+  }, []);
 
   useEffect(() => {
     categoryService.list('expense').then((res) => setCategories(res.categories)).catch(() => { });
@@ -41,7 +65,7 @@ export default function ExpensesPage() {
 
   useEffect(() => {
     loadExpenses(1, false);
-  }, [selectedCategory, debouncedSearch]);
+  }, [selectedCategory, debouncedSearch, selectedMonth]);
 
   const loadExpenses = async (pageNumber = 1, append = false) => {
     try {
@@ -51,6 +75,7 @@ export default function ExpensesPage() {
       const params = { limit: 20, page: pageNumber };
       if (selectedCategory !== 'all') params.categoryId = selectedCategory;
       if (debouncedSearch) params.search = debouncedSearch;
+      if (selectedMonth && selectedMonth !== 'all') params.month = selectedMonth;
       const result = await expenseService.list(params);
 
       if (append) {
@@ -76,6 +101,13 @@ export default function ExpensesPage() {
     } catch {
       toast.error('Failed to delete');
     }
+  };
+
+  const handleMonthChange = (month) => {
+    setSearchParams(prev => {
+      prev.set('month', month);
+      return prev;
+    }, { replace: true });
   };
 
   const categoryFilters = [
@@ -111,12 +143,26 @@ export default function ExpensesPage() {
               Expenses<span className="text-primary">.</span>
             </h1>
           </div>
-          <button
-            onClick={() => navigate('/add-expense')}
-            className="p-2 -mr-2 active:scale-95 transition-transform"
-          >
-            <Plus className="w-6 h-6 text-text" />
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <select
+                value={selectedMonth}
+                onChange={(e) => handleMonthChange(e.target.value)}
+                className="appearance-none bg-surface-alt/40 border border-border/20 text-text text-[11px] font-bold rounded-xl pl-3 pr-7 py-1.5 focus:outline-none cursor-pointer"
+              >
+                {monthOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-text-muted pointer-events-none" />
+            </div>
+            <button
+              onClick={() => navigate('/add-expense')}
+              className="p-2 -mr-2 active:scale-95 transition-transform"
+            >
+              <Plus className="w-6 h-6 text-text" />
+            </button>
+          </div>
         </div>
 
         {/* Search */}

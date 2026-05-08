@@ -129,7 +129,7 @@ export default function AddIncomePage() {
       </div>
 
       {/* Submit */}
-      <div className="mt-auto px-5 pb-6 pt-6">
+      <div className="mt-auto px-5 pb-22 pt-6">
         <Button onClick={handleSubmit} size="full" loading={loading}>
           {editId ? 'Update Income' : 'Save Income'}
         </Button>

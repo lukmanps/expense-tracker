@@ -18,4 +18,5 @@ export const expenseQuerySchema = z.object({
   endDate: z.string().optional(),
   search: z.string().optional(),
   recurring: z.coerce.boolean().optional(),
+  month: z.string().optional(),
 });

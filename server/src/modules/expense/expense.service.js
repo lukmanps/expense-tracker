@@ -8,12 +8,26 @@ export async function createExpense(userId, data) {
 }
 
 export async function getExpenses(userId, query) {
-  const { page, limit, categoryId, startDate, endDate, search, recurring } = query;
+  const { page, limit, categoryId, startDate, endDate, search, recurring, month } = query;
   const where = { userId };
 
   if (categoryId) where.categoryId = categoryId;
   if (recurring !== undefined) where.recurring = recurring;
-  if (startDate || endDate) {
+  
+  if (month) {
+    if (month === '3months') {
+      const now = new Date();
+      where.date = { gte: new Date(now.getFullYear(), now.getMonth() - 3, 1) };
+    } else if (month === '6months') {
+      const now = new Date();
+      where.date = { gte: new Date(now.getFullYear(), now.getMonth() - 6, 1) };
+    } else if (month === 'all') {
+      // no date filter
+    } else {
+      const [y, m] = month.split('-').map(Number);
+      where.date = { gte: new Date(y, m - 1, 1), lte: new Date(y, m, 0, 23, 59, 59) };
+    }
+  } else if (startDate || endDate) {
     where.date = {};
     if (startDate) where.date.gte = new Date(startDate);
     if (endDate) where.date.lte = new Date(endDate);
