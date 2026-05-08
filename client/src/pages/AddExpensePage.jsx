@@ -86,8 +86,8 @@ export default function AddExpensePage() {
       </div>
 
       {/* Amount Input */}
-      <div className="text-center py-8 px-5">
-        <p className="text-sm text-text-muted mb-2">Enter amount</p>
+      <div className="text-center py-4 px-5">
+        <p className="text-sm text-text-muted mb-1">Enter amount</p>
         <div className="flex items-center justify-center text-[40px] font-bold text-text">
           <span className="mr-1 text-text-muted">₹</span>
           <input
@@ -136,7 +136,7 @@ export default function AddExpensePage() {
       </div>
 
       {/* Submit */}
-      <div className="mt-auto px-5 pb-6 pt-6">
+      <div className="mt-auto px-5 pb-4 pt-2">
         <Button onClick={handleSubmit} size="full" loading={loading}>
           {editId ? 'Update Expense' : 'Add Expense'}
         </Button>

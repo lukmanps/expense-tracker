@@ -27,7 +27,7 @@ function getIcon(iconName) {
 export default function CategoryGrid({ categories, selected, onSelect, columns = 5 }) {
   return (
     <div
-      className="grid gap-3"
+      className="grid gap-2 gap-y-3"
       style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
     >
       {categories.map((cat) => {
@@ -39,10 +39,10 @@ export default function CategoryGrid({ categories, selected, onSelect, columns =
             key={cat.id}
             type="button"
             onClick={() => onSelect(cat.id)}
-            className="flex flex-col items-center gap-1.5 py-2 transition-all"
+            className="flex flex-col items-center gap-1 py-1 transition-all"
           >
             <div
-              className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
                 isSelected
                   ? 'ring-2 ring-primary shadow-md scale-110'
                   : 'hover:scale-105'
@@ -50,7 +50,7 @@ export default function CategoryGrid({ categories, selected, onSelect, columns =
               style={{ backgroundColor: isSelected ? cat.color : `${cat.color}20` }}
             >
               <IconComp
-                className="w-5 h-5"
+                className="w-4.5 h-4.5"
                 style={{ color: isSelected ? '#fff' : cat.color }}
               />
             </div>
