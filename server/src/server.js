@@ -5,6 +5,7 @@ import rateLimit from '@fastify/rate-limit';
 import sensible from '@fastify/sensible';
 
 import authPlugin from './plugins/auth.js';
+import adminAuthPlugin from './plugins/admin-auth.js';
 import errorHandler from './plugins/error-handler.js';
 
 import authRoutes from './modules/auth/auth.routes.js';
@@ -13,6 +14,7 @@ import expenseRoutes from './modules/expense/expense.routes.js';
 import categoryRoutes from './modules/category/category.routes.js';
 import transactionRoutes from './modules/transactions/transactions.routes.js';
 import statsRoutes from './modules/stats/stats.routes.js';
+import adminRoutes from './modules/admin/admin.routes.js';
 
 const fastify = Fastify({
   logger: {
@@ -34,6 +36,7 @@ await fastify.register(rateLimit, {
 
 await fastify.register(sensible);
 await fastify.register(authPlugin);
+await fastify.register(adminAuthPlugin);
 await fastify.register(errorHandler);
 
 // Routes
@@ -45,6 +48,7 @@ await fastify.register(expenseRoutes, { prefix: '/api/expenses' });
 await fastify.register(categoryRoutes, { prefix: '/api/categories' });
 await fastify.register(transactionRoutes, { prefix: '/api/transactions' });
 await fastify.register(statsRoutes, { prefix: '/api/stats' });
+await fastify.register(adminRoutes, { prefix: '/api/admin' });
 
 // Start server
 const PORT = parseInt(process.env.PORT) || 3001;
