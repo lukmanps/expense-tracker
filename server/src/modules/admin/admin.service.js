@@ -1,8 +1,8 @@
 import prisma from '../../db/prisma.js';
 import { getDashboardSummary, getMonthlySummary, getCategoryBreakdown, getRecentActivity, getTopExpenses, getWeeklySpending } from '../stats/stats.service.js';
-import { getExpenses } from '../expense/expense.service.js';
-import { getIncomes } from '../income/income.service.js';
-import { getTransactions } from '../transactions/transactions.service.js';
+import { getExpenses, createExpense, updateExpense, deleteExpense } from '../expense/expense.service.js';
+import { getIncomes, createIncome, updateIncome, deleteIncome } from '../income/income.service.js';
+import { getTransactions, createTransaction, updateTransaction, deleteTransaction, completeBill } from '../transactions/transactions.service.js';
 
 export async function getAllUsers() {
   const users = await prisma.user.findMany({
@@ -89,7 +89,7 @@ export async function getOverviewMonthly(numMonths = 6) {
   return Promise.all(queries);
 }
 
-// Delegate to existing services on behalf of a userId
+// Re-export read delegates
 export { getDashboardSummary, getMonthlySummary, getCategoryBreakdown, getRecentActivity, getTopExpenses, getWeeklySpending, getExpenses, getIncomes, getTransactions };
 
 export async function getUserById(userId) {
@@ -104,4 +104,54 @@ export async function getUserCategories(userId) {
     where: { OR: [{ userId }, { isDefault: true }] },
     orderBy: { name: 'asc' },
   });
+}
+
+// ── Admin Mutations ────────────────────────────────────────────────────────────
+
+export async function adminCreateExpense(userId, data) {
+  return createExpense(userId, { ...data, date: new Date(data.date) });
+}
+
+export async function adminUpdateExpense(userId, id, data) {
+  const parsed = { ...data };
+  if (parsed.date) parsed.date = new Date(parsed.date);
+  return updateExpense(userId, id, parsed);
+}
+
+export async function adminDeleteExpense(userId, id) {
+  return deleteExpense(userId, id);
+}
+
+export async function adminCreateIncome(userId, data) {
+  return createIncome(userId, { ...data, date: new Date(data.date) });
+}
+
+export async function adminUpdateIncome(userId, id, data) {
+  const parsed = { ...data };
+  if (parsed.date) parsed.date = new Date(parsed.date);
+  return updateIncome(userId, id, parsed);
+}
+
+export async function adminDeleteIncome(userId, id) {
+  return deleteIncome(userId, id);
+}
+
+export async function adminCreateTransaction(userId, data) {
+  const parsed = { ...data };
+  if (parsed.dueDate) parsed.dueDate = new Date(parsed.dueDate);
+  return createTransaction(userId, parsed);
+}
+
+export async function adminUpdateTransaction(userId, id, data) {
+  const parsed = { ...data };
+  if (parsed.dueDate) parsed.dueDate = new Date(parsed.dueDate);
+  return updateTransaction(userId, id, parsed);
+}
+
+export async function adminDeleteTransaction(userId, id) {
+  return deleteTransaction(userId, id);
+}
+
+export async function adminCompleteTransaction(userId, id) {
+  return completeBill(userId, id);
 }

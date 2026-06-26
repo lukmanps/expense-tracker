@@ -1,9 +1,10 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, LogOut, ShieldCheck } from 'lucide-react';
+import {
+  LayoutDashboard, Users, LogOut, ShieldCheck, ArrowLeftRight,
+  Settings, HelpCircle, Repeat, CreditCard, Star,
+} from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore.js';
 import useAdminStore, { ACCOUNT_COLORS } from '../../store/useAdminStore.js';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
 function formatAmount(n) {
@@ -11,6 +12,31 @@ function formatAmount(n) {
   if (Math.abs(n) >= 1000) return `₹${(n / 1000).toFixed(1)}K`;
   return `₹${n.toLocaleString('en-IN')}`;
 }
+
+function SidebarSection({ title }) {
+  return (
+    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-3 pt-5 pb-2 select-none">
+      {title}
+    </p>
+  );
+}
+
+function DisabledItem({ icon: Icon, label }) {
+  return (
+    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-300 cursor-not-allowed select-none">
+      <Icon size={16} />
+      <span>{label}</span>
+    </div>
+  );
+}
+
+const navClass = ({ isActive }) =>
+  cn(
+    'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 w-full',
+    isActive
+      ? 'bg-primary/10 text-primary font-semibold'
+      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
+  );
 
 export default function Sidebar() {
   const logout = useAuthStore((s) => s.logout);
@@ -24,88 +50,114 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-64 border-r bg-background flex flex-col h-screen overflow-y-auto">
+    <aside className="w-[218px] shrink-0 bg-white border-r border-gray-100 flex flex-col h-screen">
       {/* Logo */}
-      <div className="p-6 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm">
-          <ShieldCheck size={20} className="text-primary-foreground" />
+      <div className="px-5 py-4 flex items-center gap-2.5 border-b border-gray-50">
+        <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-sm shrink-0">
+          <ShieldCheck size={18} className="text-white" />
         </div>
         <div>
-          <div className="text-lg font-bold tracking-tight text-foreground">Xpense</div>
-          <div className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground">Admin Panel</div>
+          <div className="text-[15px] font-bold text-gray-900 leading-tight">Xpense</div>
+          <div className="text-[9px] font-semibold uppercase tracking-widest text-gray-400">Admin Panel</div>
         </div>
       </div>
 
-      <div className="px-4 py-2">
-        <div className="text-xs font-semibold text-muted-foreground mb-3 px-2">Navigation</div>
-        <div className="space-y-1">
-          <NavLink to="/" end className={({ isActive }) => cn(
-            "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-            isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}>
-            <LayoutDashboard size={18} /> Overview
+      {/* Scrollable nav area */}
+      <div className="flex-1 overflow-y-auto px-3 pb-3">
+
+        {/* ── Menu ── */}
+        <SidebarSection title="Menu" />
+        <nav className="space-y-0.5">
+          <NavLink to="/" end className={navClass}>
+            <LayoutDashboard size={16} /> Dashboard
           </NavLink>
-          <NavLink to="/accounts" className={({ isActive }) => cn(
-            "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-            isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}>
-            <Users size={18} /> All Accounts
+          <NavLink to="/transactions" className={navClass}>
+            <ArrowLeftRight size={16} /> Transactions
           </NavLink>
+          <NavLink to="/accounts" className={navClass}>
+            <Users size={16} /> Customers
+          </NavLink>
+        </nav>
+
+        {/* ── Features ── */}
+        <SidebarSection title="Features" />
+        <div className="space-y-0.5">
+          <DisabledItem icon={Repeat} label="Recurring" />
+          <DisabledItem icon={CreditCard} label="Subscriptions" />
+          <DisabledItem icon={Star} label="Feedback" />
+        </div>
+
+        {/* ── Accounts mini-list ── */}
+        {accounts.length > 0 && (
+          <>
+            <SidebarSection title="Accounts" />
+            <div className="space-y-0.5">
+              {accounts.slice(0, 7).map((acc, i) => {
+                const color = ACCOUNT_COLORS[i % ACCOUNT_COLORS.length];
+                const bal = acc.balance ?? 0;
+                return (
+                  <NavLink
+                    key={acc.id}
+                    to={`/accounts/${acc.id}`}
+                    className={({ isActive }) =>
+                      cn(
+                        'flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-colors',
+                        isActive
+                          ? 'bg-primary/10 text-primary font-semibold'
+                          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
+                      )
+                    }
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                      <span className="truncate">{acc.name}</span>
+                    </div>
+                    <span
+                      className={cn(
+                        'text-[11px] font-semibold shrink-0 ml-1',
+                        bal >= 0 ? 'text-emerald-600' : 'text-red-500'
+                      )}
+                    >
+                      {formatAmount(bal)}
+                    </span>
+                  </NavLink>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {/* ── General ── */}
+        <SidebarSection title="General" />
+        <div className="space-y-0.5">
+          <DisabledItem icon={Settings} label="Settings" />
+          <DisabledItem icon={HelpCircle} label="Help Desk" />
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors w-full text-left"
+          >
+            <LogOut size={16} />
+            Log out
+          </button>
         </div>
       </div>
 
-      {/* Accounts list */}
-      {accounts.length > 0 && (
-        <div className="px-4 py-4 flex-1">
-          <div className="text-xs font-semibold text-muted-foreground mb-3 px-2">Accounts</div>
-          <div className="space-y-1">
-            {accounts.map((acc, i) => {
-              const color = ACCOUNT_COLORS[i % ACCOUNT_COLORS.length];
-              const bal = acc.balance;
-              return (
-                <NavLink
-                  key={acc.id}
-                  to={`/accounts/${acc.id}`}
-                  className={({ isActive }) => cn(
-                    "flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                    isActive ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  )}
-                >
-                  <div className="flex items-center gap-3 truncate">
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-                    <span className="truncate">{acc.name}</span>
-                  </div>
-                  <span className={cn("text-xs font-semibold", bal >= 0 ? "text-emerald-600" : "text-destructive")}>
-                    {formatAmount(bal)}
-                  </span>
-                </NavLink>
-              );
-            })}
+      {/* ── Admin badge ── */}
+      {user && (
+        <div className="p-3 border-t border-gray-100">
+          <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-3.5">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold shrink-0">
+                {user.name?.charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-semibold text-gray-800 truncate">{user.name}</div>
+                <div className="text-[10px] text-gray-400 font-medium">Administrator</div>
+              </div>
+            </div>
           </div>
         </div>
       )}
-
-      {/* Admin badge at bottom */}
-      <div className="p-4 mt-auto border-t bg-muted/30">
-        {user && (
-          <div className="flex items-center gap-3 mb-4 px-2">
-            <Avatar className="h-9 w-9 ring-1 ring-border">
-              <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                {user.name?.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground truncate">{user.name}</div>
-              <div className="text-xs text-muted-foreground font-medium">Administrator</div>
-            </div>
-          </div>
-        )}
-        
-        <Button variant="ghost" onClick={handleLogout} className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10">
-          <LogOut size={16} className="mr-2" />
-          Log Out
-        </Button>
-      </div>
     </aside>
   );
 }

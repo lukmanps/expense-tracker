@@ -13,6 +13,7 @@ import ExpensesPage from './pages/ExpensesPage.jsx';
 import IncomePage from './pages/IncomePage.jsx';
 import TransactionsPage from './pages/TransactionsPage.jsx';
 import StatsPage from './pages/StatsPage.jsx';
+import AddTransactionPage from './pages/AddTransactionPage.jsx';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuthStore();
@@ -50,6 +51,8 @@ function AccountsLoader() {
   return null;
 }
 
+import { ConfigProvider } from 'antd';
+
 export default function App() {
   const fetchUser = useAuthStore((s) => s.fetchUser);
 
@@ -58,7 +61,17 @@ export default function App() {
   }, []);
 
   return (
-    <>
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: '#5b72ee',
+          borderRadius: 12,
+          fontFamily: 'inherit',
+          colorBorder: '#f1f5f9',
+          colorTextHeading: '#0f172a',
+        },
+      }}
+    >
       <AccountsLoader />
       <Routes>
         <Route path="/login" element={<AuthRoute><LoginPage /></AuthRoute>} />
@@ -68,6 +81,7 @@ export default function App() {
             <AdminLayout>
               <Routes>
                 <Route path="/" element={<OverviewPage />} />
+                <Route path="/transactions" element={<AddTransactionPage />} />
                 <Route path="/accounts" element={<AccountsPage />} />
                 <Route path="/accounts/:userId" element={<AccountPage />} />
                 <Route path="/accounts/:userId/expenses" element={<ExpensesPage />} />
@@ -80,6 +94,6 @@ export default function App() {
           </ProtectedRoute>
         } />
       </Routes>
-    </>
+    </ConfigProvider>
   );
 }

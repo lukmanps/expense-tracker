@@ -8,11 +8,16 @@ export async function createTransaction(userId, data) {
 }
 
 export async function getTransactions(userId, query) {
-  const { page, limit, type, status, search } = query;
+  const { page, limit, type, status, search, startDate, endDate } = query;
   const where = { userId };
 
   if (type) where.type = type;
   if (status) where.status = status;
+  if (startDate || endDate) {
+    where.dueDate = {};
+    if (startDate) where.dueDate.gte = new Date(startDate);
+    if (endDate) where.dueDate.lte = new Date(endDate);
+  }
   if (search) {
     where.name = { contains: search, mode: 'insensitive' };
   }

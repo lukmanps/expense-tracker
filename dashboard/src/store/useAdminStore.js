@@ -4,10 +4,15 @@ import { create } from 'zustand';
 const ACCOUNT_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#f43f5e', '#06b6d4', '#a855f7', '#ec4899', '#14b8a6'];
 
 const useAdminStore = create((set, get) => ({
-  accounts: [],     // all users with totals
-  selectedId: null, // currently viewed account userId
+  accounts: [],            // all users with totals
+  selectedId: null,        // currently viewed account userId (legacy)
+  selectedAccountId: null, // globally selected account for dashboard
 
-  setAccounts: (accounts) => set({ accounts }),
+  setAccounts: (accounts) => set((state) => ({
+    accounts,
+    // Auto-select first account if none selected yet
+    selectedAccountId: state.selectedAccountId ?? (accounts[0]?.id ?? null),
+  })),
 
   getAccount: (userId) => get().accounts.find((a) => a.id === userId),
 
@@ -17,6 +22,13 @@ const useAdminStore = create((set, get) => ({
   },
 
   selectAccount: (userId) => set({ selectedId: userId }),
+
+  setSelectedAccount: (accountId) => set({ selectedAccountId: accountId }),
+
+  getSelectedAccount: () => {
+    const { accounts, selectedAccountId } = get();
+    return accounts.find((a) => a.id === selectedAccountId) ?? null;
+  },
 }));
 
 export default useAdminStore;

@@ -15,6 +15,30 @@ const paginationQuery = z.object({
   recurring: z.coerce.boolean().optional(),
 });
 
+const createExpenseSchema = z.object({
+  amount: z.number().positive(),
+  categoryId: z.string().min(1),
+  date: z.string(),
+  notes: z.string().max(500).optional().nullable(),
+  recurring: z.boolean().optional().default(false),
+});
+
+const createIncomeSchema = z.object({
+  amount: z.number().positive(),
+  source: z.string().min(1).max(100),
+  date: z.string(),
+  notes: z.string().max(500).optional().nullable(),
+});
+
+const createTransactionSchema = z.object({
+  name: z.string().min(1).max(200),
+  amount: z.number().positive(),
+  type: z.enum(['to_pay', 'to_receive']),
+  dueDate: z.string().optional().nullable(),
+  notes: z.string().max(500).optional().nullable(),
+  categoryId: z.string().optional().nullable(),
+});
+
 export async function listUsers(request, reply) {
   const users = await adminService.getAllUsers();
   return reply.send({ users });
@@ -96,4 +120,62 @@ export async function userWeekly(request, reply) {
 export async function userCategoriesList(request, reply) {
   const data = await adminService.getUserCategories(request.params.userId);
   return reply.send({ categories: data });
+}
+
+// ── Admin Mutations ────────────────────────────────────────────────────────────
+
+export async function createUserExpense(request, reply) {
+  const data = createExpenseSchema.parse(request.body);
+  const expense = await adminService.adminCreateExpense(request.params.userId, data);
+  return reply.code(201).send({ expense });
+}
+
+export async function updateUserExpense(request, reply) {
+  const data = createExpenseSchema.partial().parse(request.body);
+  const expense = await adminService.adminUpdateExpense(request.params.userId, request.params.id, data);
+  return reply.send({ expense });
+}
+
+export async function deleteUserExpense(request, reply) {
+  await adminService.adminDeleteExpense(request.params.userId, request.params.id);
+  return reply.code(204).send();
+}
+
+export async function createUserIncome(request, reply) {
+  const data = createIncomeSchema.parse(request.body);
+  const income = await adminService.adminCreateIncome(request.params.userId, data);
+  return reply.code(201).send({ income });
+}
+
+export async function updateUserIncome(request, reply) {
+  const data = createIncomeSchema.partial().parse(request.body);
+  const income = await adminService.adminUpdateIncome(request.params.userId, request.params.id, data);
+  return reply.send({ income });
+}
+
+export async function deleteUserIncome(request, reply) {
+  await adminService.adminDeleteIncome(request.params.userId, request.params.id);
+  return reply.code(204).send();
+}
+
+export async function createUserTransaction(request, reply) {
+  const data = createTransactionSchema.parse(request.body);
+  const transaction = await adminService.adminCreateTransaction(request.params.userId, data);
+  return reply.code(201).send({ transaction });
+}
+
+export async function updateUserTransaction(request, reply) {
+  const data = createTransactionSchema.partial().parse(request.body);
+  const transaction = await adminService.adminUpdateTransaction(request.params.userId, request.params.id, data);
+  return reply.send({ transaction });
+}
+
+export async function deleteUserTransaction(request, reply) {
+  await adminService.adminDeleteTransaction(request.params.userId, request.params.id);
+  return reply.code(204).send();
+}
+
+export async function completeUserTransaction(request, reply) {
+  const transaction = await adminService.adminCompleteTransaction(request.params.userId, request.params.id);
+  return reply.send({ transaction });
 }
