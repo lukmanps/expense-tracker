@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, Users, LogOut, ShieldCheck, ArrowLeftRight,
+  LayoutDashboard, Users, LogOut, ShieldCheck, ArrowLeftRight, Tags
 } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore.js';
 import useAdminStore, { ACCOUNT_COLORS } from '../../store/useAdminStore.js';
@@ -45,7 +45,7 @@ export default function Sidebar() {
       </div>
 
       {/* Scrollable nav area */}
-      <div className="flex-1 overflow-y-auto px-3 pb-3">
+      <div className="flex-1 flex flex-col overflow-y-auto px-3 pb-3">
 
         {/* ── Menu ── */}
         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-3 pt-5 pb-2 select-none">Menu</p>
@@ -56,53 +56,18 @@ export default function Sidebar() {
           <NavLink to="/transactions" className={navClass}>
             <ArrowLeftRight size={16} /> Transactions
           </NavLink>
+          <NavLink to="/categories" className={navClass}>
+            <Tags size={16} /> Categories
+          </NavLink>
           <NavLink to="/accounts" className={navClass}>
             <Users size={16} /> Customers
           </NavLink>
         </nav>
 
-        {/* ── Accounts mini-list ── */}
-        {accounts.length > 0 && (
-          <>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-3 pt-5 pb-2 select-none">Accounts</p>
-            <div className="space-y-0.5">
-              {accounts.slice(0, 7).map((acc, i) => {
-                const color = ACCOUNT_COLORS[i % ACCOUNT_COLORS.length];
-                const bal = acc.balance ?? 0;
-                return (
-                  <NavLink
-                    key={acc.id}
-                    to={`/accounts/${acc.id}`}
-                    className={({ isActive }) =>
-                      cn(
-                        'flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-colors',
-                        isActive
-                          ? 'bg-primary/10 text-primary font-semibold'
-                          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
-                      )
-                    }
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                      <span className="truncate">{acc.name}</span>
-                    </div>
-                    <span
-                      className={cn(
-                        'text-[11px] font-semibold shrink-0 ml-1',
-                        bal >= 0 ? 'text-emerald-600' : 'text-red-500'
-                      )}
-                    >
-                      {formatAmount(bal)}
-                    </span>
-                  </NavLink>
-                );
-              })}
-            </div>
-          </>
-        )}
+
 
         {/* ── Actions ── */}
-        <div className="mt-6">
+        <div className="mt-auto pt-6">
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors w-full text-left"

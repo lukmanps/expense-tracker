@@ -38,4 +38,8 @@ export default async function adminRoutes(fastify) {
   fastify.put('/users/:userId/transactions/:id', adminController.updateUserTransaction);
   fastify.delete('/users/:userId/transactions/:id', adminController.deleteUserTransaction);
   fastify.patch('/users/:userId/transactions/:id/complete', adminController.completeUserTransaction);
+
+  fastify.post('/users/:userId/categories', adminController.createUserCategory);
+  fastify.put('/users/:userId/categories/:id', adminController.updateUserCategory);
+  fastify.delete('/users/:userId/categories/:id', adminController.deleteUserCategory);
 }

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import useAuthStore from './store/useAuthStore.js';
 import useAdminStore from './store/useAdminStore.js';
@@ -14,15 +15,18 @@ import IncomePage from './pages/IncomePage.jsx';
 import TransactionsPage from './pages/TransactionsPage.jsx';
 import StatsPage from './pages/StatsPage.jsx';
 import AddTransactionPage from './pages/AddTransactionPage.jsx';
+import CategoriesPage from './pages/CategoriesPage.jsx';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuthStore();
-  if (isLoading) {
+  const isAccountsLoaded = useAdminStore((s) => s.isAccountsLoaded);
+  
+  if (isLoading || (isAuthenticated && !isAccountsLoaded)) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg)' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-          <div className="spinner" style={{ width: 28, height: 28, borderWidth: 3 }} />
-          <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>Loading admin panel…</span>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm font-medium text-slate-500 animate-pulse">Loading admin panel…</p>
         </div>
       </div>
     );
@@ -82,6 +86,7 @@ export default function App() {
               <Routes>
                 <Route path="/" element={<OverviewPage />} />
                 <Route path="/transactions" element={<AddTransactionPage />} />
+                <Route path="/categories" element={<CategoriesPage />} />
                 <Route path="/accounts" element={<AccountsPage />} />
                 <Route path="/accounts/:userId" element={<AccountPage />} />
                 <Route path="/accounts/:userId/expenses" element={<ExpensesPage />} />

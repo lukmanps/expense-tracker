@@ -14,7 +14,7 @@ export const adminService = {
   getUser: (userId) => api.get(`/admin/users/${userId}`),
 
   // Per-user data (read)
-  userSummary: (userId, month) => api.get(`/admin/users/${userId}/summary`, { month }),
+  userSummary: (userId, month, startDate, endDate) => api.get(`/admin/users/${userId}/summary`, { month, startDate, endDate }),
   userExpenses: (userId, params) => api.get(`/admin/users/${userId}/expenses`, params),
   userIncomes: (userId, params) => api.get(`/admin/users/${userId}/incomes`, params),
   userTransactions: (userId, params) => api.get(`/admin/users/${userId}/transactions`, params),
@@ -22,9 +22,9 @@ export const adminService = {
 
   // Per-user stats
   userMonthly: (userId, months) => api.get(`/admin/users/${userId}/stats/monthly`, { months }),
-  userCategoryBreakdown: (userId, month) => api.get(`/admin/users/${userId}/stats/categories`, { month }),
-  userRecent: (userId, limit, month) => api.get(`/admin/users/${userId}/stats/recent`, { limit, month }),
-  userTopExpenses: (userId, limit, month) => api.get(`/admin/users/${userId}/stats/top-expenses`, { limit, month }),
+  userCategoryBreakdown: (userId, month, startDate, endDate) => api.get(`/admin/users/${userId}/stats/categories`, { month, startDate, endDate }),
+  userRecent: (userId, limit, month, startDate, endDate, type) => api.get(`/admin/users/${userId}/stats/recent`, { limit, month, startDate, endDate, type }),
+  userTopExpenses: (userId, limit, month, startDate, endDate) => api.get(`/admin/users/${userId}/stats/top-expenses`, { limit, month, startDate, endDate }),
   userWeekly: (userId) => api.get(`/admin/users/${userId}/stats/weekly`),
 
   // Per-user mutations (admin write)
@@ -40,4 +40,8 @@ export const adminService = {
   updateTransaction: (userId, id, data) => api.put(`/admin/users/${userId}/transactions/${id}`, data),
   deleteTransaction: (userId, id) => api.delete(`/admin/users/${userId}/transactions/${id}`),
   completeTransaction: (userId, id) => api.patch(`/admin/users/${userId}/transactions/${id}/complete`, {}),
+
+  createCategory: (userId, data) => api.post(`/admin/users/${userId}/categories`, data),
+  updateCategory: (userId, id, data) => api.put(`/admin/users/${userId}/categories/${id}`, data),
+  deleteCategory: (userId, id) => api.delete(`/admin/users/${userId}/categories/${id}`),
 };

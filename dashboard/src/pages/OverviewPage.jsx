@@ -93,6 +93,7 @@ function filterToParams(filter) {
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function OverviewPage() {
   const accounts = useAdminStore((s) => s.accounts);
+  const isAccountsLoaded = useAdminStore((s) => s.isAccountsLoaded);
   const selectedAccountId = useAdminStore((s) => s.selectedAccountId);
   const selectedIdx = accounts.findIndex((a) => a.id === selectedAccountId);
   const selectedAccount = selectedIdx >= 0 ? accounts[selectedIdx] : null;
@@ -126,7 +127,7 @@ export default function OverviewPage() {
         adminService.userSummary(userId, params.month, params.startDate, params.endDate),
         adminService.userMonthly(userId, 12),
         adminService.userCategoryBreakdown(userId, params.month, params.startDate, params.endDate),
-        adminService.userRecent(userId, 10, params.month, params.startDate, params.endDate),
+        adminService.userRecent(userId, 5, params.month, params.startDate, params.endDate, 'expense'),
       ]);
 
       setSummary(sum);
@@ -138,6 +139,15 @@ export default function OverviewPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (!isAccountsLoaded) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+        <p className="font-medium text-gray-600 animate-pulse">Loading accounts...</p>
+      </div>
+    );
   }
 
   if (!selectedAccount) {

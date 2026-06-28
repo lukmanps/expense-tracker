@@ -50,8 +50,8 @@ const INCOME_SOURCES = ['Salary', 'Freelance', 'Gift', 'Investment', 'Other'];
 const TODAY = () => format(new Date(), 'yyyy-MM-dd');
 
 const TABS = [
-  { id: 'income', label: 'Income', icon: TrendingUp, color: 'text-emerald-600' },
   { id: 'expense', label: 'Expenses', icon: TrendingDown, color: 'text-destructive' },
+  { id: 'income', label: 'Income', icon: TrendingUp, color: 'text-emerald-600' },
   { id: 'transaction', label: 'Bills', icon: ArrowLeftRight, color: 'text-orange-500' },
 ];
 
@@ -423,6 +423,7 @@ function ActionButtons({ onEdit, onDelete, onComplete, item }) {
 
 export default function AddTransactionPage() {
   const accounts = useAdminStore((s) => s.accounts);
+  const isAccountsLoaded = useAdminStore((s) => s.isAccountsLoaded);
   const selectedAccountId = useAdminStore((s) => s.selectedAccountId);
   const selectedIdx = accounts.findIndex((a) => a.id === selectedAccountId);
   const selectedAccount = selectedIdx >= 0 ? accounts[selectedIdx] : null;
@@ -430,13 +431,13 @@ export default function AddTransactionPage() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const urlTab = searchParams.get('tab');
-  const initialTab = (urlTab === 'income' || urlTab === 'expense' || urlTab === 'transaction') ? urlTab : 'income';
+  const initialTab = (urlTab === 'expense' || urlTab === 'income' || urlTab === 'transaction') ? urlTab : 'expense';
 
   const [activeTab, setActiveTab] = useState(initialTab);
 
   useEffect(() => {
     const t = searchParams.get('tab');
-    if (t === 'income' || t === 'expense' || t === 'transaction') {
+    if (t === 'expense' || t === 'income' || t === 'transaction') {
       setActiveTab(t);
     }
   }, [searchParams]);
@@ -446,6 +447,7 @@ export default function AddTransactionPage() {
     setSearch('');
     setSearchParams((prev) => {
       prev.set('tab', tabId);
+      prev.delete('page');
       return prev;
     });
   };
@@ -462,10 +464,9 @@ export default function AddTransactionPage() {
   const [incomeTotal, setIncomeTotal] = useState(0);
   const [expenseTotal, setExpenseTotal] = useState(0);
   const [billTotal, setBillTotal] = useState(0);
-  const [incomePage, setIncomePage] = useState(1);
-  const [expensePage, setExpensePage] = useState(1);
-  const [billPage, setBillPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+
+  const page = parseInt(searchParams.get('page')) || 1;
+  const pageSize = parseInt(searchParams.get('pageSize')) || 10;
 
   // Filters
   const [search, setSearch] = useState('');
@@ -513,7 +514,7 @@ export default function AddTransactionPage() {
   useEffect(() => {
     if (!selectedAccountId) return;
     loadTabData();
-  }, [selectedAccountId, activeTab, incomePage, expensePage, billPage, search, filterCategory, filterSource, filterType, dateRange, pageSize]);
+  }, [selectedAccountId, activeTab, page, pageSize, search, filterCategory, filterSource, filterType, dateRange]);
 
   async function loadTabData() {
     setLoading(true);
@@ -523,21 +524,21 @@ export default function AddTransactionPage() {
 
       if (activeTab === 'income') {
         const r = await adminService.userIncomes(selectedAccountId, {
-          page: incomePage, limit: pageSize, search,
+          page, limit: pageSize, search,
           source: filterSource === 'all' ? undefined : filterSource, startDate, endDate
         });
         setIncomeData(r.items || []);
         setIncomeTotal(r.total || 0);
       } else if (activeTab === 'expense') {
         const r = await adminService.userExpenses(selectedAccountId, {
-          page: expensePage, limit: pageSize, search,
+          page, limit: pageSize, search,
           categoryId: filterCategory === 'all' ? undefined : filterCategory, startDate, endDate
         });
         setExpenseData(r.items || []);
         setExpenseTotal(r.total || 0);
       } else {
         const r = await adminService.userTransactions(selectedAccountId, {
-          page: billPage, limit: pageSize, search,
+          page, limit: pageSize, search,
           type: filterType === 'all' ? undefined : filterType, startDate, endDate
         });
         setBillData(r.items || []);
@@ -551,9 +552,10 @@ export default function AddTransactionPage() {
   }
 
   function resetPagination() {
-    if (activeTab === 'income') setIncomePage(1);
-    else if (activeTab === 'expense') setExpensePage(1);
-    else setBillPage(1);
+    setSearchParams((prev) => {
+      prev.delete('page');
+      return prev;
+    });
   }
 
   function handleSaved() {
@@ -682,6 +684,15 @@ export default function AddTransactionPage() {
     }
   ];
 
+  if (!isAccountsLoaded) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+        <p className="font-medium text-slate-500 animate-pulse">Loading accounts...</p>
+      </div>
+    );
+  }
+
   if (!selectedAccount) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
@@ -740,7 +751,7 @@ export default function AddTransactionPage() {
             key={id}
             onClick={() => handleTabChange(id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${activeTab === id
-              ? 'bg-background shadow-sm text-foreground'
+              ? 'bg-white shadow-sm text-foreground'
               : 'text-muted-foreground hover:text-foreground'
               }`}
           >
@@ -817,12 +828,16 @@ export default function AddTransactionPage() {
             loading={loading}
             size="small"
             pagination={{
-              current: incomePage,
+              current: page,
               pageSize,
               total: incomeTotal,
               onChange: (p, sz) => {
-                setIncomePage(p);
-                setPageSize(sz);
+                setSearchParams((prev) => {
+                  prev.set('page', p);
+                  if (sz !== 10) prev.set('pageSize', sz);
+                  else prev.delete('pageSize');
+                  return prev;
+                });
               },
               showSizeChanger: true,
               pageSizeOptions: ['10', '20', '50', '100']
@@ -837,12 +852,16 @@ export default function AddTransactionPage() {
             loading={loading}
             size="small"
             pagination={{
-              current: expensePage,
+              current: page,
               pageSize,
               total: expenseTotal,
               onChange: (p, sz) => {
-                setExpensePage(p);
-                setPageSize(sz);
+                setSearchParams((prev) => {
+                  prev.set('page', p);
+                  if (sz !== 10) prev.set('pageSize', sz);
+                  else prev.delete('pageSize');
+                  return prev;
+                });
               },
               showSizeChanger: true,
               pageSizeOptions: ['10', '20', '50', '100']
@@ -857,12 +876,16 @@ export default function AddTransactionPage() {
             loading={loading}
             size="small"
             pagination={{
-              current: billPage,
+              current: page,
               pageSize,
               total: billTotal,
               onChange: (p, sz) => {
-                setBillPage(p);
-                setPageSize(sz);
+                setSearchParams((prev) => {
+                  prev.set('page', p);
+                  if (sz !== 10) prev.set('pageSize', sz);
+                  else prev.delete('pageSize');
+                  return prev;
+                });
               },
               showSizeChanger: true,
               pageSizeOptions: ['10', '20', '50', '100']

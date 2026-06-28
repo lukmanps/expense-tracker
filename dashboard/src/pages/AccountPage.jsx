@@ -68,10 +68,10 @@ export default function AccountPage() {
     try {
       const params = filterToParams(filter);
       const [sum, mon, wk, top] = await Promise.all([
-        adminService.userSummary(userId, params.month || ''),
+        adminService.userSummary(userId, params.month || '', params.startDate, params.endDate),
         adminService.userMonthly(userId, 12),
         adminService.userWeekly(userId),
-        adminService.userTopExpenses(userId, 5, params.month || ''),
+        adminService.userTopExpenses(userId, 5, params.month || '', params.startDate, params.endDate),
       ]);
       setSummary(sum);
       setMonthly(mon);

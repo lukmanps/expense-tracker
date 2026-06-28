@@ -21,11 +21,11 @@ function getPresets() {
 }
 
 const QUICK_PICKS = [
-  { value: 'this_month',   label: 'This Month' },
-  { value: 'last_month',   label: 'Last Month' },
-  { value: '3months',      label: 'Last 3 Mo' },
-  { value: '6months',      label: 'Last 6 Mo' },
-  { value: 'all',          label: 'All Time' },
+  { value: 'this_month', label: 'This Month' },
+  { value: 'last_month', label: 'Last Month' },
+  { value: '3months', label: 'Last 3 Mo' },
+  { value: '6months', label: 'Last 6 Mo' },
+  { value: 'all', label: 'All Time' },
 ];
 
 /**
@@ -174,7 +174,7 @@ export default function DateFilter({ filter, onChange }) {
           }}
           allowClear
           style={{ borderRadius: 12 }}
-          className="text-xs"
+          className="text-xs py-2"
         />
       </div>
 

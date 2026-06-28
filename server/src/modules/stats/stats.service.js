@@ -1,8 +1,12 @@
 import prisma from '../../db/prisma.js';
 
-export async function getDashboardSummary(userId, month) {
+export async function getDashboardSummary(userId, month, startDate, endDate) {
   let startOfMonth, endOfMonth, monthLabel;
-  if (month === '3months') {
+  if (startDate && endDate) {
+    startOfMonth = new Date(startDate);
+    endOfMonth = new Date(endDate);
+    monthLabel = 'Custom Range';
+  } else if (month === '3months') {
     const now = new Date();
     startOfMonth = new Date(now.getFullYear(), now.getMonth() - 3, 1);
     endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
@@ -16,6 +20,16 @@ export async function getDashboardSummary(userId, month) {
     startOfMonth = new Date(2000, 0, 1);
     endOfMonth = new Date(2100, 0, 1);
     monthLabel = 'All Time';
+  } else if (month === 'this_month') {
+    const now = new Date();
+    startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    monthLabel = 'This Month';
+  } else if (month === 'last_month') {
+    const now = new Date();
+    startOfMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    endOfMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+    monthLabel = 'Last Month';
   } else if (month) {
     const [y, m] = month.split('-').map(Number);
     startOfMonth = new Date(y, m - 1, 1);
@@ -215,9 +229,11 @@ export async function getLastMonthWeekly(userId) {
   );
 }
 
-export async function getCategoryBreakdown(userId, monthStr) {
+export async function getCategoryBreakdown(userId, monthStr, startDate, endDate) {
   let dateFilter = {};
-  if (monthStr === '3months') {
+  if (startDate && endDate) {
+    dateFilter = { date: { gte: new Date(startDate), lte: new Date(endDate) } };
+  } else if (monthStr === '3months') {
     const now = new Date();
     dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth() - 3, 1) } };
   } else if (monthStr === '6months') {
@@ -225,6 +241,12 @@ export async function getCategoryBreakdown(userId, monthStr) {
     dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth() - 6, 1) } };
   } else if (monthStr === 'all') {
     dateFilter = {};
+  } else if (monthStr === 'this_month') {
+    const now = new Date();
+    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth(), 1), lte: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59) } };
+  } else if (monthStr === 'last_month') {
+    const now = new Date();
+    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth() - 1, 1), lte: new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59) } };
   } else if (monthStr) {
     const [y, m] = monthStr.split('-').map(Number);
     dateFilter = { date: { gte: new Date(y, m - 1, 1), lte: new Date(y, m, 0, 23, 59, 59) } };
@@ -256,25 +278,44 @@ export async function getCategoryBreakdown(userId, monthStr) {
     .sort((a, b) => b.amount - a.amount);
 }
 
-export async function getRecentActivity(userId, limit = 10, month) {
+export async function getRecentActivity(userId, limit = 10, month, startDate, endDate, type) {
   let dateFilter = {};
-  if (month) {
+  if (startDate && endDate) {
+    dateFilter = { date: { gte: new Date(startDate), lte: new Date(endDate) } };
+  } else if (month === '3months') {
+    const now = new Date();
+    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth() - 3, 1) } };
+  } else if (month === '6months') {
+    const now = new Date();
+    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth() - 6, 1) } };
+  } else if (month === 'all') {
+    dateFilter = {};
+  } else if (month === 'this_month') {
+    const now = new Date();
+    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth(), 1), lte: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59) } };
+  } else if (month === 'last_month') {
+    const now = new Date();
+    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth() - 1, 1), lte: new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59) } };
+  } else if (month) {
     const [y, m] = month.split('-').map(Number);
     dateFilter = { date: { gte: new Date(y, m - 1, 1), lte: new Date(y, m, 0, 23, 59, 59) } };
   }
 
+  const fetchExpenses = !type || type === 'expense';
+  const fetchIncomes = !type || type === 'income';
+
   const [recentExpenses, recentIncomes] = await Promise.all([
-    prisma.expense.findMany({
+    fetchExpenses ? prisma.expense.findMany({
       where: { userId, ...dateFilter },
       include: { category: true },
       orderBy: { date: 'desc' },
       take: limit,
-    }),
-    prisma.income.findMany({
+    }) : Promise.resolve([]),
+    fetchIncomes ? prisma.income.findMany({
       where: { userId, ...dateFilter },
       orderBy: { date: 'desc' },
       take: limit,
-    }),
+    }) : Promise.resolve([]),
   ]);
 
   const activities = [
@@ -328,9 +369,11 @@ export async function exportCSV(userId) {
   return csv;
 }
 
-export async function getTopExpenses(userId, limit = 5, monthStr) {
+export async function getTopExpenses(userId, limit = 5, monthStr, startDate, endDate) {
   let dateFilter = {};
-  if (monthStr === '3months') {
+  if (startDate && endDate) {
+    dateFilter = { date: { gte: new Date(startDate), lte: new Date(endDate) } };
+  } else if (monthStr === '3months') {
     const now = new Date();
     dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth() - 3, 1) } };
   } else if (monthStr === '6months') {
@@ -338,6 +381,12 @@ export async function getTopExpenses(userId, limit = 5, monthStr) {
     dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth() - 6, 1) } };
   } else if (monthStr === 'all') {
     dateFilter = {};
+  } else if (monthStr === 'this_month') {
+    const now = new Date();
+    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth(), 1), lte: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59) } };
+  } else if (monthStr === 'last_month') {
+    const now = new Date();
+    dateFilter = { date: { gte: new Date(now.getFullYear(), now.getMonth() - 1, 1), lte: new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59) } };
   } else if (monthStr) {
     const [y, m] = monthStr.split('-').map(Number);
     dateFilter = { date: { gte: new Date(y, m - 1, 1), lte: new Date(y, m, 0, 23, 59, 59) } };

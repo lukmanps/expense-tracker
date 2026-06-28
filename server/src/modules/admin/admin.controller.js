@@ -1,13 +1,19 @@
 import * as adminService from './admin.service.js';
 import { z } from 'zod';
 
-const monthQuery = z.object({ month: z.string().optional() });
+const monthQuery = z.object({
+  month: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional()
+});
 const numMonthsQuery = z.object({ months: z.coerce.number().int().min(1).max(12).default(6) });
 const paginationQuery = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   search: z.string().optional(),
   month: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
   categoryId: z.string().optional(),
   source: z.string().optional(),
   type: z.string().optional(),
@@ -39,6 +45,13 @@ const createTransactionSchema = z.object({
   categoryId: z.string().optional().nullable(),
 });
 
+const createCategorySchema = z.object({
+  name: z.string().min(1).max(100),
+  icon: z.string().min(1).max(50),
+  color: z.string().min(1).max(50),
+  type: z.enum(['income', 'expense']),
+});
+
 export async function listUsers(request, reply) {
   const users = await adminService.getAllUsers();
   return reply.send({ users });
@@ -63,8 +76,8 @@ export async function overviewMonthly(request, reply) {
 }
 
 export async function userSummary(request, reply) {
-  const { month } = monthQuery.parse(request.query);
-  const data = await adminService.getDashboardSummary(request.params.userId, month);
+  const { month, startDate, endDate } = monthQuery.parse(request.query);
+  const data = await adminService.getDashboardSummary(request.params.userId, month, startDate, endDate);
   return reply.send(data);
 }
 
@@ -93,22 +106,23 @@ export async function userMonthly(request, reply) {
 }
 
 export async function userCategories(request, reply) {
-  const { month } = monthQuery.parse(request.query);
-  const data = await adminService.getCategoryBreakdown(request.params.userId, month);
+  const { month, startDate, endDate } = monthQuery.parse(request.query);
+  const data = await adminService.getCategoryBreakdown(request.params.userId, month, startDate, endDate);
   return reply.send(data);
 }
 
 export async function userRecent(request, reply) {
-  const { month } = monthQuery.parse(request.query);
+  const { month, startDate, endDate } = monthQuery.parse(request.query);
+  const type = request.query.type;
   const limit = parseInt(request.query.limit) || 20;
-  const result = await adminService.getRecentActivity(request.params.userId, limit, month);
+  const result = await adminService.getRecentActivity(request.params.userId, limit, month, startDate, endDate, type);
   return reply.send({ data: result });
 }
 
 export async function userTopExpenses(request, reply) {
-  const { month } = monthQuery.parse(request.query);
+  const { month, startDate, endDate } = monthQuery.parse(request.query);
   const limit = parseInt(request.query.limit) || 5;
-  const data = await adminService.getTopExpenses(request.params.userId, limit, month);
+  const data = await adminService.getTopExpenses(request.params.userId, limit, month, startDate, endDate);
   return reply.send(data);
 }
 
@@ -178,4 +192,21 @@ export async function deleteUserTransaction(request, reply) {
 export async function completeUserTransaction(request, reply) {
   const transaction = await adminService.adminCompleteTransaction(request.params.userId, request.params.id);
   return reply.send({ transaction });
+}
+
+export async function createUserCategory(request, reply) {
+  const data = createCategorySchema.parse(request.body);
+  const category = await adminService.adminCreateCategory(request.params.userId, data);
+  return reply.code(201).send({ category });
+}
+
+export async function updateUserCategory(request, reply) {
+  const data = createCategorySchema.partial().parse(request.body);
+  const category = await adminService.adminUpdateCategory(request.params.userId, request.params.id, data);
+  return reply.send({ category });
+}
+
+export async function deleteUserCategory(request, reply) {
+  await adminService.adminDeleteCategory(request.params.userId, request.params.id);
+  return reply.code(204).send();
 }

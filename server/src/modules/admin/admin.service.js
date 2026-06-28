@@ -3,6 +3,7 @@ import { getDashboardSummary, getMonthlySummary, getCategoryBreakdown, getRecent
 import { getExpenses, createExpense, updateExpense, deleteExpense } from '../expense/expense.service.js';
 import { getIncomes, createIncome, updateIncome, deleteIncome } from '../income/income.service.js';
 import { getTransactions, createTransaction, updateTransaction, deleteTransaction, completeBill } from '../transactions/transactions.service.js';
+import { createCategory, updateCategory, deleteCategory } from '../category/category.service.js';
 
 export async function getAllUsers() {
   const users = await prisma.user.findMany({
@@ -154,4 +155,16 @@ export async function adminDeleteTransaction(userId, id) {
 
 export async function adminCompleteTransaction(userId, id) {
   return completeBill(userId, id);
+}
+
+export async function adminCreateCategory(userId, data) {
+  return createCategory(userId, data);
+}
+
+export async function adminUpdateCategory(userId, id, data) {
+  return updateCategory(userId, id, data);
+}
+
+export async function adminDeleteCategory(userId, id) {
+  return deleteCategory(userId, id);
 }
