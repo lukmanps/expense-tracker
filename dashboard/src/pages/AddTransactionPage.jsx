@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Table, Tag, DatePicker } from 'antd';
+import * as Icons from 'lucide-react';
 import {
   TrendingUp, TrendingDown, ArrowLeftRight, Plus, Loader2,
   X, Trash2, Pencil, CheckCircle2, Clock, Search
@@ -14,6 +16,33 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+// ─── Category Icons Mapping ──────────────────────────────────────────────────
+
+const CATEGORY_ICONS = {
+  'utensils': Icons.UtensilsCrossed,
+  'car': Icons.Car,
+  'shopping-bag': Icons.ShoppingBag,
+  'home': Icons.Home,
+  'receipt': Icons.Receipt,
+  'film': Icons.Film,
+  'heart': Icons.Heart,
+  'book-open': Icons.BookOpen,
+  'plane': Icons.Plane,
+  'more-horizontal': Icons.MoreHorizontal,
+  'banknote': Icons.Banknote,
+  'laptop': Icons.Laptop,
+  'gift': Icons.Gift,
+  'trending-up': Icons.TrendingUp,
+  'plus-circle': Icons.PlusCircle,
+  'circle': Icons.Circle,
+  'tag': Icons.Tag,
+};
+
+function CategoryIcon({ iconName, className, style }) {
+  const IconComp = CATEGORY_ICONS[iconName] || Icons.Circle;
+  return <IconComp className={className} style={style} size={14} />;
+}
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -30,7 +59,7 @@ const TABS = [
 
 function ConfirmDialog({ open, message, onConfirm, onCancel, loading }) {
   if (!open) return null;
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-background rounded-2xl border shadow-2xl p-6 w-full max-w-sm mx-4">
         <p className="text-sm text-foreground font-medium mb-6">{message}</p>
@@ -42,14 +71,15 @@ function ConfirmDialog({ open, message, onConfirm, onCancel, loading }) {
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
 // ─── Shared Form Primitives ───────────────────────────────────────────────────
 
 function ModalShell({ title, onClose, children }) {
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="bg-background rounded-2xl border shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-200">
         <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
@@ -62,7 +92,8 @@ function ModalShell({ title, onClose, children }) {
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -149,7 +180,7 @@ function IncomeModal({ userId, editItem, onClose, onSaved }) {
       }
       onSaved();
     } catch (err) {
-      toast.error(err.message || 'Failed to save income');
+      toast.error(err.message || 'Action failed');
     } finally {
       setLoading(false);
     }
@@ -159,30 +190,18 @@ function IncomeModal({ userId, editItem, onClose, onSaved }) {
     <ModalShell title={editItem ? 'Edit Income' : 'Add Income'} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <AmountField value={amount} onChange={setAmount} />
-
         <div>
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Source</label>
-          <div className="flex flex-wrap gap-2">
-            {INCOME_SOURCES.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setSource(s)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${source === s
-                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                  : 'bg-background text-muted-foreground border-border hover:border-emerald-400 hover:text-emerald-600'
-                  }`}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">Source</label>
+          <Select value={source} onValueChange={setSource}>
+            <SelectTrigger className="w-full h-10 rounded-xl"><SelectValue /></SelectTrigger>
+            <SelectContent className="rounded-xl">
+              {INCOME_SOURCES.map(s => <SelectItem key={s} value={s} className="rounded-lg">{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
-
         <DateField value={date} onChange={setDate} />
         <NotesField value={notes} onChange={setNotes} />
-
-        <SubmitRow loading={loading} label={editItem ? 'Update Income' : 'Add Income'} onClose={onClose} />
+        <SubmitRow loading={loading} label={editItem ? 'Update Income' : 'Save Income'} onClose={onClose} />
       </form>
     </ModalShell>
   );
@@ -190,7 +209,7 @@ function IncomeModal({ userId, editItem, onClose, onSaved }) {
 
 function ExpenseModal({ userId, editItem, categories, onClose, onSaved }) {
   const expenseCategories = categories.filter((c) => c.type === 'expense');
-  const [amount, setAmount] = useState(editItem ? String(editItem.amount) : '');
+  const [amount, setAmount] = useState(editItem ? String(Math.abs(editItem.amount)) : '');
   const [categoryId, setCategoryId] = useState(editItem?.categoryId || expenseCategories[0]?.id || '');
   const [date, setDate] = useState(editItem ? format(new Date(editItem.date), 'yyyy-MM-dd') : TODAY());
   const [notes, setNotes] = useState(editItem?.notes || '');
@@ -198,14 +217,16 @@ function ExpenseModal({ userId, editItem, categories, onClose, onSaved }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!categoryId && expenseCategories.length > 0) setCategoryId(expenseCategories[0].id);
-  }, [categories]);
+    if (!editItem && expenseCategories.length > 0 && !categoryId) {
+      setCategoryId(expenseCategories[0].id);
+    }
+  }, [expenseCategories, editItem, categoryId]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     const num = parseFloat(amount);
     if (!num || num <= 0) { toast.error('Enter a valid amount'); return; }
-    if (!categoryId) { toast.error('Select a category'); return; }
+    if (!categoryId) { toast.error('Create/select a category first'); return; }
     setLoading(true);
     try {
       const data = { amount: num, categoryId, date: new Date(date).toISOString(), notes: notes || null, recurring };
@@ -218,7 +239,7 @@ function ExpenseModal({ userId, editItem, categories, onClose, onSaved }) {
       }
       onSaved();
     } catch (err) {
-      toast.error(err.message || 'Failed to save expense');
+      toast.error(err.message || 'Action failed');
     } finally {
       setLoading(false);
     }
@@ -240,12 +261,14 @@ function ExpenseModal({ userId, editItem, categories, onClose, onSaved }) {
                   key={c.id}
                   type="button"
                   onClick={() => setCategoryId(c.id)}
-                  className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border text-xs font-medium transition-all ${categoryId === c.id
+                  className={`flex flex-col items-center gap-2 p-2.5 rounded-xl border text-xs font-medium transition-all ${categoryId === c.id
                     ? 'border-primary bg-primary/10 text-primary shadow-sm'
                     : 'border-border text-muted-foreground hover:border-primary/40 hover:bg-muted/50'
                     }`}
                 >
-                  <span className="text-xl">{c.emoji || '📦'}</span>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center border transition-all" style={{ backgroundColor: categoryId === c.id ? c.color : `${c.color}15`, borderColor: categoryId === c.id ? c.color : `${c.color}40` }}>
+                    <CategoryIcon iconName={c.icon} style={{ color: categoryId === c.id ? '#fff' : c.color }} className="w-4 h-4" />
+                  </div>
                   <span className="truncate w-full text-center">{c.name}</span>
                 </button>
               ))}
@@ -405,7 +428,27 @@ export default function AddTransactionPage() {
   const selectedAccount = selectedIdx >= 0 ? accounts[selectedIdx] : null;
   const selectedColor = selectedIdx >= 0 ? ACCOUNT_COLORS[selectedIdx % ACCOUNT_COLORS.length] : '#6366f1';
 
-  const [activeTab, setActiveTab] = useState('income');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab');
+  const initialTab = (urlTab === 'income' || urlTab === 'expense' || urlTab === 'transaction') ? urlTab : 'income';
+
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    const t = searchParams.get('tab');
+    if (t === 'income' || t === 'expense' || t === 'transaction') {
+      setActiveTab(t);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setSearch('');
+    setSearchParams((prev) => {
+      prev.set('tab', tabId);
+      return prev;
+    });
+  };
 
   // Data state
   const [incomeData, setIncomeData] = useState([]);
@@ -422,13 +465,37 @@ export default function AddTransactionPage() {
   const [incomePage, setIncomePage] = useState(1);
   const [expensePage, setExpensePage] = useState(1);
   const [billPage, setBillPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
 
   // Filters
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterSource, setFilterSource] = useState('all');
-  const [filterType, setFilterType] = useState('all');
+  const urlType = searchParams.get('type');
+  const initialFilterType = (urlType === 'to_pay' || urlType === 'to_receive') ? urlType : 'all';
+  const [filterType, setFilterType] = useState(initialFilterType);
+
+  useEffect(() => {
+    const t = searchParams.get('type');
+    if (t === 'to_pay' || t === 'to_receive') {
+      setFilterType(t);
+    } else {
+      setFilterType('all');
+    }
+  }, [searchParams]);
+
+  const handleFilterTypeChange = (val) => {
+    setFilterType(val);
+    resetPagination();
+    setSearchParams((prev) => {
+      if (val === 'all') {
+        prev.delete('type');
+      } else {
+        prev.set('type', val);
+      }
+      return prev;
+    });
+  };
   const [dateRange, setDateRange] = useState(null);
 
   // Modal state
@@ -446,7 +513,7 @@ export default function AddTransactionPage() {
   useEffect(() => {
     if (!selectedAccountId) return;
     loadTabData();
-  }, [selectedAccountId, activeTab, incomePage, expensePage, billPage, search, filterCategory, filterSource, filterType, dateRange]);
+  }, [selectedAccountId, activeTab, incomePage, expensePage, billPage, search, filterCategory, filterSource, filterType, dateRange, pageSize]);
 
   async function loadTabData() {
     setLoading(true);
@@ -560,8 +627,8 @@ export default function AddTransactionPage() {
       title: 'Category', dataIndex: 'category', key: 'category',
       render: (c) => (
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md flex items-center justify-center text-xs border" style={{ backgroundColor: `${c?.color}15`, borderColor: `${c?.color}40` }}>
-            {c?.emoji || '📦'}
+          <div className="w-6 h-6 rounded-md flex items-center justify-center border shrink-0" style={{ backgroundColor: `${c?.color}15`, borderColor: `${c?.color}40` }}>
+            <CategoryIcon iconName={c?.icon} style={{ color: c?.color }} className="w-3.5 h-3.5" />
           </div>
           <span className="font-medium">{c?.name || '—'}</span>
         </div>
@@ -571,10 +638,7 @@ export default function AddTransactionPage() {
       title: 'Notes', dataIndex: 'notes', key: 'notes',
       render: (v) => <span className="text-muted-foreground">{v || '—'}</span>
     },
-    {
-      title: 'Recurring', dataIndex: 'recurring', key: 'recurring',
-      render: (v) => v ? <Tag color="purple" className="bg-purple-50 text-purple-700 border-purple-200">Recurring</Tag> : <span className="text-muted-foreground">—</span>
-    },
+
     {
       title: 'Amount', dataIndex: 'amount', key: 'amount', align: 'right',
       render: (v) => <AmountDisplay amount={-v} size="sm" />
@@ -630,6 +694,20 @@ export default function AddTransactionPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
+      <style>{`
+        .ant-table-wrapper .ant-table-pagination {
+          width: 100% !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: flex-end !important;
+          padding: 0 16px !important;
+        }
+        .ant-table-wrapper .ant-pagination-options {
+          order: -1 !important;
+          margin-right: auto !important;
+          margin-left: 0 !important;
+        }
+      `}</style>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -660,7 +738,7 @@ export default function AddTransactionPage() {
         {TABS.map(({ id, label, icon: Icon, color }) => (
           <button
             key={id}
-            onClick={() => { setActiveTab(id); setSearch(''); }}
+            onClick={() => handleTabChange(id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${activeTab === id
               ? 'bg-background shadow-sm text-foreground'
               : 'text-muted-foreground hover:text-foreground'
@@ -702,12 +780,21 @@ export default function AddTransactionPage() {
                 <SelectTrigger className="w-[160px] bg-white border-gray-200"><SelectValue placeholder="All Categories" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  {categories.map(c => (
+                    <SelectItem key={c.id} value={c.id} className="rounded-lg">
+                      <span className="flex items-center gap-2">
+                        <span className="w-4 h-4 rounded-md flex items-center justify-center shrink-0" style={{ backgroundColor: `${c.color}15` }}>
+                          <CategoryIcon iconName={c.icon} style={{ color: c.color }} className="w-2.5 h-2.5" />
+                        </span>
+                        <span>{c.name}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             )}
             {activeTab === 'transaction' && (
-              <Select value={filterType} onValueChange={(v) => { setFilterType(v); resetPagination(); }}>
+              <Select value={filterType} onValueChange={handleFilterTypeChange}>
                 <SelectTrigger className="w-[140px] bg-white border-gray-200"><SelectValue placeholder="All Types" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
@@ -728,12 +815,17 @@ export default function AddTransactionPage() {
             dataSource={incomeData}
             rowKey="id"
             loading={loading}
+            size="small"
             pagination={{
               current: incomePage,
               pageSize,
               total: incomeTotal,
-              onChange: (p) => setIncomePage(p),
-              showSizeChanger: false
+              onChange: (p, sz) => {
+                setIncomePage(p);
+                setPageSize(sz);
+              },
+              showSizeChanger: true,
+              pageSizeOptions: ['10', '20', '50', '100']
             }}
           />
         )}
@@ -743,12 +835,17 @@ export default function AddTransactionPage() {
             dataSource={expenseData}
             rowKey="id"
             loading={loading}
+            size="small"
             pagination={{
               current: expensePage,
               pageSize,
               total: expenseTotal,
-              onChange: (p) => setExpensePage(p),
-              showSizeChanger: false
+              onChange: (p, sz) => {
+                setExpensePage(p);
+                setPageSize(sz);
+              },
+              showSizeChanger: true,
+              pageSizeOptions: ['10', '20', '50', '100']
             }}
           />
         )}
@@ -758,12 +855,17 @@ export default function AddTransactionPage() {
             dataSource={billData}
             rowKey="id"
             loading={loading}
+            size="small"
             pagination={{
               current: billPage,
               pageSize,
               total: billTotal,
-              onChange: (p) => setBillPage(p),
-              showSizeChanger: false
+              onChange: (p, sz) => {
+                setBillPage(p);
+                setPageSize(sz);
+              },
+              showSizeChanger: true,
+              pageSizeOptions: ['10', '20', '50', '100']
             }}
           />
         )}

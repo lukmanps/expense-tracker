@@ -39,5 +39,5 @@ export const adminService = {
   createTransaction: (userId, data) => api.post(`/admin/users/${userId}/transactions`, data),
   updateTransaction: (userId, id, data) => api.put(`/admin/users/${userId}/transactions/${id}`, data),
   deleteTransaction: (userId, id) => api.delete(`/admin/users/${userId}/transactions/${id}`),
-  completeTransaction: (userId, id) => api.patch(`/admin/users/${userId}/transactions/${id}/complete`),
+  completeTransaction: (userId, id) => api.patch(`/admin/users/${userId}/transactions/${id}/complete`, {}),
 };

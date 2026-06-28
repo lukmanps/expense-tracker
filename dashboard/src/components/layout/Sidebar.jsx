@@ -1,7 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, LogOut, ShieldCheck, ArrowLeftRight,
-  Settings, HelpCircle, Repeat, CreditCard, Star,
 } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore.js';
 import useAdminStore, { ACCOUNT_COLORS } from '../../store/useAdminStore.js';
@@ -11,23 +10,6 @@ function formatAmount(n) {
   if (Math.abs(n) >= 100000) return `₹${(n / 100000).toFixed(1)}L`;
   if (Math.abs(n) >= 1000) return `₹${(n / 1000).toFixed(1)}K`;
   return `₹${n.toLocaleString('en-IN')}`;
-}
-
-function SidebarSection({ title }) {
-  return (
-    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-3 pt-5 pb-2 select-none">
-      {title}
-    </p>
-  );
-}
-
-function DisabledItem({ icon: Icon, label }) {
-  return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-300 cursor-not-allowed select-none">
-      <Icon size={16} />
-      <span>{label}</span>
-    </div>
-  );
 }
 
 const navClass = ({ isActive }) =>
@@ -66,7 +48,7 @@ export default function Sidebar() {
       <div className="flex-1 overflow-y-auto px-3 pb-3">
 
         {/* ── Menu ── */}
-        <SidebarSection title="Menu" />
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-3 pt-5 pb-2 select-none">Menu</p>
         <nav className="space-y-0.5">
           <NavLink to="/" end className={navClass}>
             <LayoutDashboard size={16} /> Dashboard
@@ -79,18 +61,10 @@ export default function Sidebar() {
           </NavLink>
         </nav>
 
-        {/* ── Features ── */}
-        <SidebarSection title="Features" />
-        <div className="space-y-0.5">
-          <DisabledItem icon={Repeat} label="Recurring" />
-          <DisabledItem icon={CreditCard} label="Subscriptions" />
-          <DisabledItem icon={Star} label="Feedback" />
-        </div>
-
         {/* ── Accounts mini-list ── */}
         {accounts.length > 0 && (
           <>
-            <SidebarSection title="Accounts" />
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-3 pt-5 pb-2 select-none">Accounts</p>
             <div className="space-y-0.5">
               {accounts.slice(0, 7).map((acc, i) => {
                 const color = ACCOUNT_COLORS[i % ACCOUNT_COLORS.length];
@@ -127,11 +101,8 @@ export default function Sidebar() {
           </>
         )}
 
-        {/* ── General ── */}
-        <SidebarSection title="General" />
-        <div className="space-y-0.5">
-          <DisabledItem icon={Settings} label="Settings" />
-          <DisabledItem icon={HelpCircle} label="Help Desk" />
+        {/* ── Actions ── */}
+        <div className="mt-6">
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors w-full text-left"

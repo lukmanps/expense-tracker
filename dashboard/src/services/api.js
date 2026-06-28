@@ -12,7 +12,8 @@ async function request(method, path, body, params) {
     });
   }
 
-  const headers = { 'Content-Type': 'application/json' };
+  const headers = {};
+  if (body) headers['Content-Type'] = 'application/json';
   const token = getToken();
   if (token) headers['Authorization'] = `Bearer ${token}`;
 

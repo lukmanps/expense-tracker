@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Cell,
+  ResponsiveContainer, Cell, PieChart, Pie,
 } from 'recharts';
 import { adminService } from '../services/admin.service.js';
 import useAdminStore, { ACCOUNT_COLORS } from '../store/useAdminStore.js';
@@ -36,6 +36,20 @@ const ChartTooltip = ({ active, payload, label }) => {
           {p.name}: {formatINR(p.value)}
         </p>
       ))}
+    </div>
+  );
+};
+
+const PieTooltip = ({ active, payload }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-white border border-gray-100 rounded-2xl p-2.5 shadow-xl text-sm">
+      <p style={{ color: payload[0].payload.color }} className="font-bold mb-0.5">
+        {payload[0].name}
+      </p>
+      <p className="font-semibold text-gray-700">
+        {formatINR(payload[0].value)}
+      </p>
     </div>
   );
 };
@@ -98,7 +112,6 @@ export default function OverviewPage() {
   const [categories, setCategories] = useState([]);
   const [recent, setRecent] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTx, setSearchTx] = useState('');
 
   useEffect(() => {
     if (selectedAccountId) loadData(selectedAccountId);
@@ -142,11 +155,10 @@ export default function OverviewPage() {
   const balance = summary?.balance ?? 0;
   const currentMonthShort = dayjs().format('MMM');
   const spendPct = monthIncome > 0 ? Math.min(100, (monthExpense / monthIncome) * 100) : 0;
+  const totalCatExpense = categories.reduce((sum, c) => sum + c.amount, 0);
   const topCats = categories.slice(0, 3);
   const otherAmt = categories.slice(3).reduce((s, c) => s + c.amount, 0);
-  const filteredRecent = recent.filter(
-    (r) => !searchTx || r.title.toLowerCase().includes(searchTx.toLowerCase())
-  );
+  const filteredRecent = recent;
 
   return (
     <div className="space-y-5 animate-in fade-in duration-300">
@@ -265,73 +277,78 @@ export default function OverviewPage() {
           )}
         </div>
 
-        {/* Spending Overview */}
+        {/* Spending Overview (Category Breakdown Stats) */}
         <div className="lg:col-span-2 bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex flex-col">
-          <div className="flex items-center gap-2.5 mb-5">
+          <div className="flex items-center gap-2.5 mb-4">
             <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
               <BarChart2 size={15} className="text-primary" />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-gray-800">Spending Overview</h2>
+              <h2 className="text-base font-semibold text-gray-800">Category Breakdown</h2>
               <p className="text-[11px] text-gray-400">{filter.label}</p>
             </div>
           </div>
 
-          <div className="mb-3">
-            <div className="flex items-end gap-2">
-              <span className="text-[26px] font-bold text-gray-900 leading-none">
-                {loading
-                  ? <span className="inline-block w-32 h-7 bg-gray-100 rounded-lg animate-pulse" />
-                  : formatINR(monthExpense)}
-              </span>
-              {monthIncome > 0 && !loading && (
-                <span className={cn(
-                  'text-xs font-bold px-2 py-0.5 rounded-full mb-0.5',
-                  spendPct > 80 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'
-                )}>
-                  {spendPct.toFixed(1)}%
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-gray-400 mt-1.5">From {formatINR(monthIncome)} income</p>
-          </div>
-
-          <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden mb-5">
-            <div
-              className="h-full rounded-full transition-all duration-700"
-              style={{
-                width: `${spendPct}%`,
-                background: `linear-gradient(90deg, ${PRIMARY}, #a78bfa)`,
-              }}
-            />
-          </div>
-
           {loading ? (
-            <div className="flex-1 flex items-center justify-center">
-              <Loader2 className="h-5 w-5 animate-spin text-gray-300" />
+            <div className="flex-1 flex items-center justify-center py-12">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
             </div>
           ) : categories.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">No expenses this period</p>
+            <div className="flex-1 flex flex-col items-center justify-center py-12 text-gray-400">
+              <TrendingDown size={20} className="mb-2" />
+              <p className="text-sm font-medium">No expenses this period</p>
+            </div>
           ) : (
-            <div className="space-y-3.5 flex-1">
-              {topCats.map((cat) => (
-                <div key={cat.categoryId} className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-3 h-3 rounded-[3px] shrink-0" style={{ backgroundColor: cat.color }} />
-                    <span className="text-sm text-gray-600 truncate">{cat.name}</span>
-                  </div>
-                  <span className="text-sm font-bold text-gray-800 shrink-0">{formatINR(cat.amount)}</span>
+            <div className="flex flex-col gap-4 flex-1">
+              {/* Donut Chart with central total */}
+              <div className="relative flex items-center justify-center h-[170px] w-full">
+                {/* Central text displaying total spent */}
+                <div className="absolute flex flex-col items-center justify-center text-center pointer-events-none">
+                  <span className="text-[9px] uppercase tracking-wider font-bold text-gray-400">Total Spent</span>
+                  <span className="text-base font-extrabold text-gray-800 mt-0.5 leading-none">
+                    {formatINR(totalCatExpense)}
+                  </span>
                 </div>
-              ))}
-              {otherAmt > 0 && (
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-3 h-3 rounded-[3px] bg-gray-300 shrink-0" />
-                    <span className="text-sm text-gray-400 truncate">Others</span>
-                  </div>
-                  <span className="text-sm font-bold text-gray-500 shrink-0">{formatINR(otherAmt)}</span>
-                </div>
-              )}
+
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={categories}
+                      dataKey="amount"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={55}
+                      outerRadius={75}
+                      paddingAngle={3}
+                    >
+                      {categories.map((c, i) => <Cell key={i} fill={c.color} />)}
+                    </Pie>
+                    <Tooltip content={<PieTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Progress List */}
+              <div className="flex flex-col gap-3 flex-1">
+                {categories.slice(0, 4).map((c) => {
+                  const pct = totalCatExpense > 0 ? (c.amount / totalCatExpense) * 100 : 0;
+                  return (
+                    <div key={c.categoryId} className="space-y-1">
+                      <div className="flex items-center justify-between text-xs font-semibold text-gray-600">
+                        <span className="flex items-center gap-2 truncate">
+                          <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
+                          <span className="truncate">{c.name}</span>
+                        </span>
+                        <span className="text-gray-900 font-bold shrink-0">{formatINR(c.amount)} ({pct.toFixed(0)}%)</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-gray-50 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all duration-500" style={{ backgroundColor: c.color, width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -342,8 +359,16 @@ export default function OverviewPage() {
 
         {/* Account Details */}
         <div className="lg:col-span-2 bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-          <h2 className="text-base font-semibold text-gray-800 mb-4">Account Details</h2>
+          <div className='w-full flex justify-between items-center mb-3'>
+            <h2 className="text-base font-semibold text-gray-800">Account Details</h2>
 
+            <Link
+              to={`/accounts/${selectedAccountId}`}
+              className="flex items-center justify-center gap-1.5 text-sm font-semibold text-primary hover:underline mt-1"
+            >
+              View Full Profile <ArrowRight size={14} />
+            </Link>
+          </div>
           {/* Gradient card */}
           <div
             className="rounded-2xl p-5 mb-4 text-white relative overflow-hidden"
@@ -395,13 +420,6 @@ export default function OverviewPage() {
               </p>
             </div>
           )}
-
-          <Link
-            to={`/accounts/${selectedAccountId}`}
-            className="flex items-center justify-center gap-1.5 text-sm font-semibold text-primary hover:underline mt-1"
-          >
-            View Full Profile <ArrowRight size={14} />
-          </Link>
         </div>
 
         {/* Recent Transactions */}
@@ -411,23 +429,12 @@ export default function OverviewPage() {
               <h2 className="text-base font-semibold text-gray-800">Recent Transactions</h2>
               <p className="text-[11px] text-gray-400">{filter.label}</p>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                <input
-                  type="search"
-                  placeholder="Search"
-                  value={searchTx}
-                  onChange={(e) => setSearchTx(e.target.value)}
-                  className="pl-7 pr-3 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50 outline-none focus:ring-2 focus:ring-primary/20 w-28 transition-all"
-                />
-              </div>
-              <button className="flex items-center gap-1 px-2.5 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50 text-gray-500 hover:bg-gray-100 font-medium whitespace-nowrap">
-                <SlidersHorizontal size={12} />
-                Sort by
-                <ChevronDown size={11} />
-              </button>
-            </div>
+            <Link
+              to={`/accounts/${selectedAccountId}/transactions?type=to_pay`}
+              className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline hover:text-primary/80 transition-colors"
+            >
+              View Transactions <ArrowRight size={14} />
+            </Link>
           </div>
 
           {loading ? (
