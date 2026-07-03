@@ -163,6 +163,7 @@ export default function OverviewPage() {
   const monthIncome = summary?.monthIncome ?? 0;
   const monthExpense = summary?.monthExpense ?? 0;
   const balance = summary?.balance ?? 0;
+  const monthBalance = summary?.monthBalance ?? 0;
   const currentMonthShort = dayjs().format('MMM');
   const spendPct = monthIncome > 0 ? Math.min(100, (monthExpense / monthIncome) * 100) : 0;
   const totalCatExpense = categories.reduce((sum, c) => sum + c.amount, 0);
@@ -198,8 +199,8 @@ export default function OverviewPage() {
         />
         <StatCard
           label="Balance (All Time)"
-          value={formatINR(balance)}
-          sub={`Net this period: ${formatINR(monthIncome - monthExpense)}`}
+          value={formatINR(monthBalance)}
+          sub={`Net this period: ${formatINR(balance)}`}
           icon={Wallet}
           iconBg="bg-primary/10"
           iconColor="text-primary"
